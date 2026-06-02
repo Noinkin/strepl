@@ -1,0 +1,45 @@
+---
+
+title: stREPL
+description: High-performance framework for engineering interactive terminal REPLs and custom execution shells.
+template: splash
+hero:
+  tagline: Lightning-fast, context-aware command interfaces, custom terminal menus, and isolated JS sandboxes.
+  image:
+    file: ../../assets/houston.webp
+  actions:
+  - text: Get Started
+    link: /strepl/guides/getting-started/
+    icon: right-arrow
+    variant: primary
+  - text: API Reference
+    link: /strepl/api/
+    icon: open-book
+    variant: minimal
+
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Why stREPL?
+
+<CardGrid stagger>
+    <Card icon="bars" title="Hierarchical Commands">
+    Construct deep, tree-structured hierarchies of command sub-namespaces and leaf execution paths with declarative schemas.
+    </Card>
+    <Card icon="terminal" title="Smart Autocomplete">
+    Context-aware tab completions featuring scrollable ANSI drop-down selection overlays and dynamic inline argument hints.
+    </Card>
+    <Card icon="code-branch" title="Sandboxed V8 Playgrounds">
+    Instantly spin up isolated JS execution runtimes with native top-level await rewrites and state persistence bindings.
+    </Card>
+    <Card icon="rocket" title="Advanced Repaint Core">
+    Fully-custom ANSI terminal engine supporting scrollable menus, caret micro-movements, and multi-line buffer history.
+    </Card>
+    <Card icon="document" title="Terminal Selections">
+    Highlight native terminal block selections with Shift + Arrows alongside built-in system clipboard interaction tools.
+    </Card>
+    <Card icon="setting" title="Lifecycle Middleware">
+    Inject chainable asynchronous interception hooks before or after runs for automated input validation or auditing.
+    </Card>
+</CardGrid>

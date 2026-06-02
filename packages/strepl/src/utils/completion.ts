@@ -1,0 +1,317 @@
+import { Registry } from "../registry.js";
+import { type CommandInternal, type ArgDefinition } from "../types.js";
+import { COLORS, format } from "./ansi.js";
+
+const JS_KEYWORDS = [
+    "const", "let", "var", "return", "if", "else", "for", "while", "function",
+    "class", "new", "await", "async", "typeof", "instanceof", "import", "export",
+    "default", "switch", "case", "break", "continue", "try", "catch", "finally",
+    "throw", "delete", "void", "yield", "of", "in", "true", "false", "null",
+    "undefined", "this", "super",
+];
+
+/**
+ * Traverses a segmented phrase chain down hierarchical branch namespaces.
+ *
+ * @param parts - Ordered list segments indicating current structural traversal route paths.
+ * @param registry - The starting parent execution registry tree boundary.
+ * @returns Nested target lookup container references alongside calculated traversal depth counts.
+ * * @public
+ */
+export function walkNS(parts: string[], registry: Registry): { reg: Registry; depth: number } {
+    let reg = registry, depth = 0;
+    while (depth < parts.length - 1) {
+        const cmd = reg.get(parts[depth]!);
+        if (cmd?.commands) {
+            reg = cmd.commands;
+            depth++;
+        } else break;
+    }
+    return { reg, depth };
+}
+
+/**
+ * Scans, processes, and extracts eligible auto-complete string arrays based on input strings.
+ *
+ * @param input - Current console layout string values.
+ * @param registry - Master route mapping configuration layer.
+ * @param context - Mutational shared analytical context space variables.
+ * @param globals - Framework tools mapping container records.
+ * @returns Filtered matched suggestion phrases.
+ * * @public
+ */
+export function getCandidates(input: string, registry: Registry, context: any, globals: any): string[] {
+    const trailing = input.endsWith(" ");
+    const parts = input.trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return [];
+
+    const { reg, depth } = walkNS(parts, registry);
+    if (depth === parts.length - 1 && !trailing) {
+        const typed = parts[depth]!;
+        return reg.names().filter((n) => n.startsWith(typed) && n !== typed);
+    }
+
+    const cmd = reg.get(parts[depth]!);
+    if (!cmd) return [];
+
+    if (cmd.commands) {
+        const after = parts.slice(depth + 1);
+        if (!after.length || (after.length === 1 && !trailing)) {
+            const typed = after[0] ?? "";
+            return (cmd.commands as Registry).names().filter((n) => n.startsWith(typed) && n !== typed);
+        }
+        const sub = (cmd.commands as Registry).get(after[0]!);
+        return sub ? argCandidates(sub, after.slice(1), trailing, context, globals) : [];
+    }
+
+    return argCandidates(cmd, parts.slice(depth + 1), trailing, context, globals);
+}
+
+/**
+ * Generates dynamic list configurations filling parameter positions.
+ */
+function argCandidates(cmd: CommandInternal, argParts: string[], trailing: boolean, context: any, globals: any): string[] {
+    const idx = trailing ? argParts.length : Math.max(0, argParts.length - 1);
+    const typed = trailing ? "" : (argParts.at(-1) ?? "");
+    const def = cmd.args[idx];
+    if (!def?.choices) return [];
+
+    const previousArgs = argParts.slice(0, idx);
+    const choices = typeof def.choices === "function" 
+        ? def.choices(typed, previousArgs, context, globals) 
+        : def.choices;
+
+    return choices.filter((c) => c.startsWith(typed) && c !== typed);
+}
+
+/**
+ * Identifies and isolates missing arguments definitions remaining to satisfy commands.
+ *
+ * @param input - Active prompt text line layout.
+ * @param registry - Root lookup configuration map structures.
+ * @returns Array collection containing tail parameter definitions.
+ * * @public
+ */
+export function getHintArgs(input: string, registry: Registry): ArgDefinition[] {
+    const trailing = input.endsWith(" ");
+    const parts = input.trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return [];
+
+    const { reg, depth } = walkNS(parts, registry);
+    const cmd = reg.get(parts[depth]!);
+    if (!cmd) return [];
+
+    let target = cmd, argOffset = depth + 1;
+    if (cmd.commands) {
+        const sub = parts[depth + 1] ? (cmd.commands as Registry).get(parts[depth + 1]!) : null;
+        if (!sub) return [];
+        target = sub;
+        argOffset = depth + 2;
+    }
+
+    const filled = parts.slice(argOffset).length;
+    const pos = trailing ? filled : Math.max(0, filled - 1);
+    return target.args.slice(pos + 1);
+}
+
+/**
+ * Extracts the final contiguous word segment token from an input text sequence line.
+ *
+ * @param input - The text stream buffer content.
+ * @returns Isolated active phrase slice or empty string.
+ * * @public
+ */
+export function currentWord(input: string): string {
+    return input.endsWith(" ") ? "" : (input.split(/\s+/).at(-1) ?? "");
+}
+
+/**
+ * Inspects isolated VM object models to compute predictive JavaScript property keys.
+ *
+ * @param input - The active script code phrase segment.
+ * @param sandboxRoot - Activated proxy model monitoring local variables.
+ * @returns Matching candidates properties alongside targeted modification span lengths.
+ * * @public
+ */
+export function getJSCandidates(input: string, sandboxRoot: any): { candidates: string[]; replaceLen: number } {
+    const chainMatch = input.match(/([\w$][\w$.]*)\.(\w*)$/);
+    if (chainMatch) {
+        const chain = chainMatch[1]!.split(".");
+        const partial = chainMatch[2]!;
+
+        let obj = sandboxRoot;
+        for (const key of chain) {
+            if (obj == null || (typeof obj !== "object" && typeof obj !== "function")) {
+                return { candidates: [], replaceLen: 0 };
+            }
+            obj = obj[key];
+        }
+        if (obj == null) return { candidates: [], replaceLen: 0 };
+
+        const proto = Object.getPrototypeOf(obj);
+        const keys = [
+            ...Object.getOwnPropertyNames(obj),
+            ...(proto && proto !== Object.prototype ? Object.getOwnPropertyNames(proto) : []),
+        ].filter((k) => !k.startsWith("_") && !k.startsWith("#") && k !== "constructor");
+
+        const candidates = [...new Set(keys)].filter((k) => k.startsWith(partial)).sort();
+        return { candidates, replaceLen: partial.length };
+    }
+
+    const topMatch = input.match(/([\w$]+)$/);
+    if (!topMatch) return { candidates: [], replaceLen: 0 };
+
+    const partial = topMatch[1]!;
+    const sandboxKeys = Object.keys(sandboxRoot);
+    const candidates = [...new Set([...sandboxKeys, ...JS_KEYWORDS])]
+        .filter((k) => k.startsWith(partial) && k !== partial)
+        .sort();
+    return { candidates, replaceLen: partial.length };
+}
+
+/**
+ * Tokenizes, checks syntax paths, and colorizes input lines with full ANSI tags.
+ *
+ * @param input - The plain string line contents.
+ * @param registry - Active hierarchical navigation dictionary mappings.
+ * @param jsMode - Flags if JavaScript lexical rules overwrite normal arguments tokens.
+ * @param context - Stateful parameter variables map.
+ * @param globals - Embedded application environmental global tools.
+ * @returns Complete colorized text safe for active terminal standard output writers.
+ * * @public
+ */
+export function colorInput(input: string, registry: Registry, jsMode: boolean, context: any, globals: any): string {
+    if (jsMode) return colorJS(input);
+    const trailing = input.endsWith(" ");
+    const parts = input.trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return "";
+
+    const { reg, depth } = walkNS(parts, registry);
+    const result: string[] = [];
+
+    for (let i = 0; i < depth; i++) result.push(format(COLORS.cyan + COLORS.bold, parts[i]!));
+    const rawName = parts[depth]!;
+    const cmd = reg.get(rawName);
+    const typingCmd = depth === parts.length - 1 && !trailing;
+
+    result.push(typingCmd ? format(COLORS.white + COLORS.bold, rawName) : cmd ? format(COLORS.cyan + COLORS.bold, rawName) : format(COLORS.red, rawName));
+    if (!cmd || typingCmd) return result.join(" ") + (trailing ? " " : "");
+
+    let target = cmd, argOffset = depth + 1;
+    if (cmd.commands && parts.length > depth + 1) {
+        const subRaw = parts[depth + 1]!;
+        const sub = (cmd.commands as Registry).get(subRaw);
+        const typingSub = parts.length === depth + 2 && !trailing;
+        result.push(typingSub ? format(COLORS.white + COLORS.bold, subRaw) : sub ? format(COLORS.blue + COLORS.bold, subRaw) : format(COLORS.red, subRaw));
+        if (!sub || typingSub) return result.join(" ") + (trailing ? " " : "");
+        target = sub;
+        argOffset = depth + 2;
+    }
+
+    parts.slice(argOffset).forEach((token, i) => {
+        const def = target.args[i];
+        if (!def) { result.push(format(COLORS.white, token)); return; }
+        if (def.choices) {
+            const previousArgs = parts.slice(argOffset, argOffset + i);
+            const list = typeof def.choices === "function" ? def.choices(token, previousArgs, context, globals) : def.choices;
+            result.push(list.includes(token) || list.some(c => c.startsWith(token)) ? format(COLORS.yellow, token) : format(COLORS.red + COLORS.bold, token));
+        } else {
+            result.push(format(COLORS.white, token));
+        }
+    });
+
+    return result.join(" ") + (trailing ? " " : "");
+}
+
+/**
+ * Colorizes standard JavaScript syntax keywords, structures, and strings.
+ */
+function colorJS(input: string): string {
+    const tokenRegex = /("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)|(\b(?:const|let|var|return|if|else|for|while|function|class|new|await|async|typeof|instanceof)\b)|(\b\d+\.?\d*\b)/g;
+    return input.replace(tokenRegex, (match, stringToken, keywordToken, numberToken) => {
+        if (stringToken) return format(COLORS.green, stringToken);
+        if (keywordToken) return format(COLORS.blue + COLORS.bold, keywordToken);
+        if (numberToken) return format(COLORS.yellow, numberToken);
+        return match;
+    });
+}
+
+/**
+ * Asserts structural grammar validation, verifying sub-namespaces and ensuring all required parameters are specified.
+ *
+ * @param input - The raw statement line string intended for execution.
+ * @param registry - Hierarchical routing definitions tree.
+ * @returns Status validation diagnostic object.
+ * * @public
+ */
+export function validate(input: string, registry: Registry): { ok: boolean; unknownCmd?: string; needsSubcmd?: boolean; name?: string; missingArgs?: string[] } {
+    const parts = input.trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return { ok: true };
+
+    const { reg, depth } = walkNS(parts, registry);
+    const cmd = reg.get(parts[depth]!);
+    if (!cmd) return { ok: false, unknownCmd: parts[depth] };
+
+    let target = cmd, argOffset = depth + 1;
+    if (cmd.commands) {
+        const sub = parts[depth + 1] ? (cmd.commands as Registry).get(parts[depth + 1]!) : null;
+        if (!sub) return { ok: false, needsSubcmd: true, name: cmd.name };
+        target = sub;
+        argOffset = depth + 2;
+    }
+
+    const provided = parts.slice(argOffset).length;
+    const missing = target.args
+        .filter((a, i) => a.required && i >= provided)
+        .map((a) => a.name);
+    return { ok: missing.length === 0, missingArgs: missing };
+}
+
+/**
+ * High-performance file path completion builder mapping real directory systems onto option choices.
+ *
+ * @remarks
+ * Dynamically resolves slash trends across platforms, queries synchronous local filesystem boundaries, 
+ * filters trailing types, and appends directory directory context indicators.
+ *
+ * @param options - Toggles adjusting directory searches.
+ * @returns A structured contextual choice generator function compliant with `ArgDefinition["choices"]`.
+ * * @public
+ */
+export function pathCompleter(options: { onlyDirs?: boolean } = {}): (typed: string, previousArgs: string[], context: any, globals: any) => string[] {
+    return (typed: string, previousArgs: string[], context: any, globals: any): string[] => {
+        const fs = globals.fs || require("node:fs");
+        const path = globals.path || require("node:path");
+        
+        const normalized = typed.replace(/\\/g, "/");
+        let searchDir = ".";
+        let baseName = normalized;
+
+        if (normalized.includes("/")) {
+            const lastSlash = normalized.lastIndexOf("/");
+            searchDir = normalized.slice(0, lastSlash);
+            baseName = normalized.slice(lastSlash + 1);
+            if (searchDir === "") searchDir = "/";
+        }
+
+        try {
+            if (!fs.existsSync(searchDir) || !fs.statSync(searchDir).isDirectory()) return [];
+            const items = fs.readdirSync(searchDir);
+            const results: string[] = [];
+
+            for (const item of items) {
+                if (item.startsWith(".") && !baseName.startsWith(".")) continue;
+                const fullPath = searchDir === "." ? item : `${searchDir}/${item}`;
+                
+                let isDir = false;
+                try { isDir = fs.statSync(fullPath).isDirectory(); } catch {}
+                if (options.onlyDirs && !isDir) continue;
+
+                results.push(isDir ? `${fullPath}/` : fullPath);
+            }
+            return results;
+        } catch {
+            return [];
+        }
+    };
+}

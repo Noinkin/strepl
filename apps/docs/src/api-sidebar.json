@@ -1,0 +1,119 @@
+[
+  {
+    "label": "STREPL",
+    "items": [
+      {
+        "label": "Strepl Package",
+        "slug": "api/strepl"
+      },
+      {
+        "label": "arg() function",
+        "slug": "api/strepl/arg"
+      },
+      {
+        "label": "ArgDefinition",
+        "slug": "api/strepl/argdefinition"
+      },
+      {
+        "label": "BaseCommand",
+        "slug": "api/strepl/basecommand"
+      },
+      {
+        "label": "colorInput() function",
+        "slug": "api/strepl/colorinput"
+      },
+      {
+        "label": "COLORS variable",
+        "slug": "api/strepl/colors"
+      },
+      {
+        "label": "CommandDefinition type",
+        "slug": "api/strepl/commanddefinition"
+      },
+      {
+        "label": "CommandInternal",
+        "slug": "api/strepl/commandinternal"
+      },
+      {
+        "label": "currentWord() function",
+        "slug": "api/strepl/currentword"
+      },
+      {
+        "label": "ExecutableCommand",
+        "slug": "api/strepl/executablecommand"
+      },
+      {
+        "label": "format() function",
+        "slug": "api/strepl/format"
+      },
+      {
+        "label": "getCandidates() function",
+        "slug": "api/strepl/getcandidates"
+      },
+      {
+        "label": "getHintArgs() function",
+        "slug": "api/strepl/gethintargs"
+      },
+      {
+        "label": "getJSCandidates() function",
+        "slug": "api/strepl/getjscandidates"
+      },
+      {
+        "label": "JSSandbox",
+        "slug": "api/strepl/jssandbox"
+      },
+      {
+        "label": "KEYS variable",
+        "slug": "api/strepl/keys"
+      },
+      {
+        "label": "NamespaceCommand",
+        "slug": "api/strepl/namespacecommand"
+      },
+      {
+        "label": "pathCompleter() function",
+        "slug": "api/strepl/pathcompleter"
+      },
+      {
+        "label": "Registry",
+        "slug": "api/strepl/registry"
+      },
+      {
+        "label": "render() function",
+        "slug": "api/strepl/render"
+      },
+      {
+        "label": "RenderOptions",
+        "slug": "api/strepl/renderoptions"
+      },
+      {
+        "label": "Repl",
+        "slug": "api/strepl/repl"
+      },
+      {
+        "label": "ReplOptions",
+        "slug": "api/strepl/reploptions"
+      },
+      {
+        "label": "ReplState",
+        "slug": "api/strepl/replstate"
+      },
+      {
+        "label": "sleep() function",
+        "slug": "api/strepl/sleep"
+      },
+      {
+        "label": "strip() function",
+        "slug": "api/strepl/strip"
+      },
+      {
+        "label": "validate() function",
+        "slug": "api/strepl/validate"
+      },
+      {
+        "label": "walkNS() function",
+        "slug": "api/strepl/walkns"
+      }
+    ]
+  }
+]

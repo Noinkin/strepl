@@ -1,0 +1,745 @@
+import { Readable, Writable } from "node:stream";
+import { type CommandDefinition, type ReplOptions, type ReplState, type RenderOptions, type ArgDefinition } from "./types.js";
+import { COLORS, KEYS, format, strip, sleep } from "./utils/ansi.js";
+import { walkNS, getCandidates, getJSCandidates, validate, currentWord } from "./utils/completion.js";
+import { Registry } from "./registry.js";
+import { JSSandbox } from "./sandbox.js";
+import { render } from "./renderer.js";
+import clipboard from "clipboardy";
+
+/**
+ * Functional wrapper signature representing lifecycle hook callbacks processed around execution periods.
+ * * @public
+ */
+type HookFn = (raw: string, context: any, globals: any) => void | Promise<void>;
+
+/**
+ * Primary stateful orchestrator managing terminal streams, inputs, UI rendering, and script evaluation.
+ *
+ * @remarks
+ * Instantiates terminal raw environments to manage input text buffers, processes visual dropdown multi-line items,
+ * and maintains history and selection spaces for customized user sessions.
+ *
+ * @public
+ */
+export class Repl {
+    #registry = new Registry();
+    #history: string[] = [];
+    #histIdx = -1;
+    #mlBuffer: string[] = [];
+    #before: HookFn[] = [];
+    #after: HookFn[] = [];
+    #prompt = format(COLORS.green + COLORS.bold, ">") + " ";
+    #jsPrompt = format(COLORS.yellow + COLORS.bold, "js >") + " ";
+    #jsMode = false;
+    #sandbox!: JSSandbox;
+    
+    #stdin: Readable & { isTTY?: boolean; setRawMode?: (mode: boolean) => void };
+    #stdout: Writable & { columns?: number };
+
+    #state: ReplState = {
+        input: "",
+        candidates: [],
+        completionIdx: 0,
+        drawnDropdownLines: 0,
+        jsCandidates: [],
+        jsReplaceLen: 0,
+        cursor: 0,
+        selectionAnchor: null,
+    };
+
+    /**
+     * Contextual operational application state accessible in custom command hooks and run pipelines.
+     */
+    context: Record<string, any>;
+    /**
+     * Registered structural package tooling and globals bound into Javascript VM contexts.
+     */
+    globals: Record<string, any>;
+
+    /**
+     * Initializes an instances of the interactive REPL shell environment.
+     *
+     * @param opts - Initialization parameters structuring system context records and stream pipes.
+     */
+    constructor(opts: ReplOptions = {}) {
+        this.context = opts.context ?? {};
+        this.globals = opts.globals ?? {};
+        this.#stdin = opts.stdin ?? process.stdin;
+        this.#stdout = opts.stdout ?? process.stdout;
+        this.#registerBuiltins();
+    }
+
+    /**
+     * Fluent interface attaching an executable or namespace definition to the application environment.
+     *
+     * @param def - Target layout configuring paths, command targets, or branch directories.
+     * @returns Context instance enabling chained command attachments.
+     */
+    command(def: CommandDefinition): this {
+        this.#registry.add(def);
+        return this;
+    }
+
+    /**
+     * Registers an interception hook executing prior to executing valid matching user inputs.
+     *
+     * @param fn - Interceptor block function. Throwing inside halts downstream command executions.
+     * @returns Context instance enabling chained interceptor definitions.
+     */
+    before(fn: HookFn): this {
+        this.#before.push(fn);
+        return this;
+    }
+
+    /**
+     * Registers a post-execution completion monitoring hook triggered when commands finalize correctly.
+     *
+     * @param fn - Post-execution diagnostic monitoring function.
+     * @returns Context instance enabling chained monitoring definitions.
+     */
+    after(fn: HookFn): this {
+        this.#after.push(fn);
+        return this;
+    }
+
+    /**
+     * Switches the selected stream target to interactive raw conditions and spins up active key reading pipelines.
+     *
+     * @throws Error - Thrown if the initialized input stream device is not an interactive terminal environment.
+     * @returns Reference to this active execution framework instance.
+     */
+    start(): this {
+        if (!this.#stdin.isTTY) {
+            console.error("Needs an interactive terminal.");
+            process.exit(1);
+        }
+        this.#sandbox = new JSSandbox(this.context, this.globals);
+        if (typeof this.#stdin.setRawMode === "function") {
+            this.#stdin.setRawMode(true);
+        }
+        this.#stdin.resume();
+        this.#stdin.setEncoding("utf8");
+        this.#stdout.write(
+            "\n" +
+                format(COLORS.cyan + COLORS.bold, "  REPL") +
+                "\n" +
+                format(
+                    COLORS.gray,
+                    '  Tab accept · ↑↓ cycle/history · "js" for JS mode · Ctrl+C exit',
+                ) +
+                "\n\n",
+        );
+        this.#draw();
+        this.#stdin.on("data", (key: string) => this.#onKey(key));
+        return this;
+    }
+
+    get #activePrompt(): string {
+        return this.#jsMode ? this.#jsPrompt : this.#prompt;
+    }
+
+    #draw(opts?: RenderOptions): void {
+        render(
+            this.#state,
+            this.#registry,
+            this.#activePrompt,
+            this.#jsMode,
+            opts,
+            this.#stdout,
+            this.context,
+            this.globals
+        );
+    }
+
+    #refreshCandidates(): void {
+        const s = this.#state;
+        if (this.#jsMode) {
+            const { candidates, replaceLen } = getJSCandidates(
+                s.input,
+                this.#sandbox.root,
+            );
+            s.jsCandidates = candidates;
+            s.jsReplaceLen = replaceLen;
+            s.candidates = [];
+            s.completionIdx = 0;
+        } else {
+            s.candidates = getCandidates(s.input, this.#registry, this.context, this.globals);
+            s.jsCandidates = [];
+            s.jsReplaceLen = 0;
+            s.completionIdx = 0;
+        }
+    }
+
+    async #onKey(key: string): Promise<void> {
+        if (key === KEYS.escape) {
+            if (this.#jsMode) {
+                this.#exitJSMode();
+            } else this.#enterJSMode();
+            return;
+        }
+
+        switch (key) {
+            case KEYS.altC:
+            case KEYS.altC2:
+                if (this.#state.selectionAnchor === null) {
+                    await clipboard.write(this.#state.input);
+                } else {
+                    const range = this.#getSelectionRange();
+                    if (range) {
+                        await clipboard.write(
+                            this.#state.input.slice(range.start, range.end),
+                        );
+                    }
+                }
+                return;
+            case KEYS.altV:
+            case KEYS.altV2:
+            case KEYS.ctrlV: {
+                const clip = await clipboard.read();
+                if (clip) {
+                    const i = this.#state.cursor;
+                    this.#state.input =
+                        this.#state.input.slice(0, i) +
+                        clip +
+                        this.#state.input.slice(i);
+                    this.#state.cursor = i + clip.length;
+                    this.#histIdx = -1;
+                    this.#refreshCandidates();
+                    this.#draw();
+                }
+                return;
+            }
+            case KEYS.ctrlC:
+            case KEYS.ctrlD:
+                return this.#exit();
+            case KEYS.ctrlU:
+                this.#state.input = "";
+                this.#state.cursor = 0;
+                this.#refreshCandidates();
+                return this.#draw();
+            case KEYS.ctrlA:
+                this.#clearSelection();
+                this.#state.cursor = 0;
+                this.#startSelectionIfNeeded();
+                this.#state.cursor = this.#state.input.length;
+                return this.#draw();
+            case KEYS.enter:
+                return this.#execute();
+            case KEYS.backspace: {
+                const s = this.#state;
+                const range =
+                    this.#state.selectionAnchor === null
+                        ? null
+                        : {
+                              a: Math.min(s.cursor, s.selectionAnchor!),
+                              b: Math.max(s.cursor, s.selectionAnchor!),
+                          };
+
+                if (
+                    range &&
+                    range.a !== range.b &&
+                    range.a >= 0 &&
+                    range.b <= s.input.length
+                ) {
+                    s.input =
+                        s.input.slice(0, range.a) + s.input.slice(range.b);
+                    s.cursor = range.a;
+                    s.selectionAnchor = null;
+                } else {
+                    if (s.cursor === 0) return;
+                    s.input =
+                        s.input.slice(0, s.cursor - 1) +
+                        s.input.slice(s.cursor);
+                    s.cursor--;
+                }
+
+                s.selectionAnchor = null;
+                this.#histIdx = -1;
+                this.#refreshCandidates();
+                return this.#draw();
+            }
+            case KEYS.tab:
+                return this.#accept();
+            case KEYS.arrowUp:
+                return this.#navUp();
+            case KEYS.arrowDown:
+                return this.#navDown();
+            case KEYS.arrowRight:
+                this.#clearSelection();
+                this.#state.cursor = Math.min(
+                    this.#state.input.length,
+                    this.#state.cursor + 1,
+                );
+                return this.#draw();
+            case KEYS.arrowLeft:
+                this.#clearSelection();
+                this.#state.cursor = Math.max(0, this.#state.cursor - 1);
+                return this.#draw();
+            case KEYS.shiftRight:
+                this.#startSelectionIfNeeded();
+                this.#state.cursor = Math.min(
+                    this.#state.input.length,
+                    this.#state.cursor + 1,
+                );
+                return this.#draw();
+            case KEYS.shiftLeft:
+                this.#startSelectionIfNeeded();
+                this.#state.cursor = Math.max(0, this.#state.cursor - 1);
+                return this.#draw();
+            default: {
+                if (key.startsWith("\x1b")) return;
+
+                const s = this.#state;
+
+                const range = this.#getSelectionRange();
+                if (range) {
+                    s.input =
+                        s.input.slice(0, range.start) +
+                        s.input.slice(range.end);
+                    s.cursor = range.start;
+                    s.selectionAnchor = null;
+                }
+
+                if (this.#jsMode) {
+                    const PAIRS: Record<string, string> = {
+                        "(": ")", "[": "]", "{": "}", '"': '"', "'": "'", "`": "`",
+                    };
+                    const CLOSERS = new Set([")", "]", "}", '"', "'", "`"]);
+                    const charAfter = s.input[s.cursor] ?? "";
+
+                    if (CLOSERS.has(key) && charAfter === key) {
+                        s.cursor++;
+                        return this.#draw();
+                    }
+
+                    if (key in PAIRS) {
+                        const close = PAIRS[key]!;
+                        const shouldPair = !(
+                            ["'", '"', "`"].includes(key) &&
+                            /\w/.test(charAfter)
+                        );
+                        if (shouldPair) {
+                            s.input =
+                                s.input.slice(0, s.cursor) +
+                                key +
+                                close +
+                                s.input.slice(s.cursor);
+                            s.cursor++;
+                            this.#histIdx = -1;
+                            this.#refreshCandidates();
+                            return this.#draw();
+                        }
+                    }
+                }
+
+                const i = s.cursor;
+                s.input = s.input.slice(0, i) + key + s.input.slice(i);
+                s.cursor = i + key.length;
+                this.#histIdx = -1;
+                this.#refreshCandidates();
+                this.#draw();
+            }
+        }
+    }
+
+    #getSelectionRange(): { start: number; end: number } | null {
+        const s = this.#state;
+        if (s.selectionAnchor === null) return null;
+
+        const a = Math.min(s.cursor, s.selectionAnchor);
+        const b = Math.max(s.cursor, s.selectionAnchor);
+
+        if (a === b) return null;
+        return { start: a, end: b };
+    }
+
+    #clearSelection(): void {
+        this.#state.selectionAnchor = null;
+    }
+
+    #startSelectionIfNeeded(): void {
+        if (this.#state.selectionAnchor === null) {
+            this.#state.selectionAnchor = this.#state.cursor;
+        }
+    }
+
+    #accept(): void {
+        const s = this.#state;
+
+        if (this.#jsMode) {
+            const chosen = s.jsCandidates[s.completionIdx];
+            if (!chosen) return;
+            s.input =
+                s.input.slice(0, s.input.length - s.jsReplaceLen) + chosen;
+            this.#refreshCandidates();
+            this.#state.cursor = s.input.length;
+            return this.#draw();
+        }
+
+        if (!s.candidates.length) return;
+        const word = currentWord(s.input);
+        const chosen = s.candidates[s.completionIdx] ?? "";
+        if (!chosen) return;
+        s.input = s.input.slice(0, s.input.length - word.length) + chosen + " ";
+        this.#state.cursor = s.input.length;
+        this.#refreshCandidates();
+        this.#draw();
+    }
+
+    #navUp(): void {
+        const s = this.#state;
+        const lst = this.#jsMode ? s.jsCandidates : s.candidates;
+        if (lst.length > 1) {
+            s.completionIdx = (s.completionIdx - 1 + lst.length) % lst.length;
+            this.#draw();
+        } else {
+            this.#histNav(1);
+        }
+    }
+
+    #navDown(): void {
+        const s = this.#state;
+        const lst = this.#jsMode ? s.jsCandidates : s.candidates;
+        if (lst.length > 1) {
+            s.completionIdx = (s.completionIdx + 1) % lst.length;
+            this.#draw();
+        } else {
+            this.#histNav(-1);
+        }
+    }
+
+    #histNav(dir: number): void {
+        if (!this.#history.length) return;
+        this.#histIdx = Math.max(
+            -1,
+            Math.min(this.#history.length - 1, this.#histIdx + dir),
+        );
+        this.#state.input =
+            this.#histIdx >= 0 ? this.#history.at(-1 - this.#histIdx)! : "";
+        this.#state.cursor = this.#state.input.length;
+        this.#refreshCandidates();
+        this.#draw();
+    }
+
+    #enterJSMode(): void {
+        this.#jsMode = true;
+        this.#state.input = "";
+        this.#state.cursor = 0;
+        this.#refreshCandidates();
+        this.#state.drawnDropdownLines = 0;
+        this.#stdout.write("\x1b[2J\x1b[H");
+        this.#stdout.write(
+            "\n" +
+                format(COLORS.yellow + COLORS.bold, "  JS mode") +
+                format(COLORS.gray, ' — Esc, "exit", or "js" to leave\n\n'),
+        );
+        this.#draw();
+    }
+
+    #exitJSMode(): void {
+        this.#jsMode = false;
+        this.#state.input = "";
+        this.#state.cursor = 0;
+        this.#refreshCandidates();
+        this.#state.drawnDropdownLines = 0;
+        this.#stdout.write("\x1b[2J\x1b[H");
+        this.#stdout.write("\n" + format(COLORS.gray, "  Command mode\n\n"));
+        this.#draw();
+    }
+
+    async #execute(): Promise<void> {
+        const s = this.#state;
+
+        if (s.drawnDropdownLines > 0) {
+            let out = "";
+            for (let i = 0; i < s.drawnDropdownLines; i++) out += "\n\x1b[K";
+            out += COLORS.up(s.drawnDropdownLines);
+            this.#stdout.write(out);
+            s.drawnDropdownLines = 0;
+        }
+        this.#stdout.write("\n");
+
+        if (s.input.trimEnd().endsWith("\\")) {
+            this.#mlBuffer.push(s.input.trimEnd().slice(0, -1).trim());
+            s.input = "";
+            this.#refreshCandidates();
+            this.#stdout.write(format(COLORS.gray, "... "));
+            return;
+        }
+
+        const lines = [...this.#mlBuffer, s.input.trim()].filter(Boolean);
+        this.#mlBuffer = [];
+        const raw = lines.join("\n");
+        s.input = "";
+        s.completionIdx = 0;
+        s.cursor = 0;
+        this.#histIdx = -1;
+        this.#refreshCandidates();
+
+        if (!raw.trim()) {
+            this.#draw();
+            return;
+        }
+        this.#history.push(raw);
+
+        if (this.#jsMode) {
+            const t = raw.trim();
+            if (t === "exit" || t === "js") {
+                this.#exitJSMode();
+                return;
+            }
+            try {
+                const out = await this.#sandbox.eval(raw);
+                if (out === null) this.#stdout.write("\n");
+                else this.#stdout.write(`  ${out}\n\n`);
+            } catch (e: any) {
+                this.#stdout.write(
+                    format(
+                        COLORS.red,
+                        `  ✗ ${e.constructor.name}: ${e.message}`,
+                    ) + "\n\n",
+                );
+            }
+            this.#draw();
+            return;
+        }
+
+        if (raw.trim() === "js") {
+            this.#enterJSMode();
+            return;
+        }
+
+        const v = validate(raw, this.#registry);
+        if (!v.ok) {
+            await this.#flash(raw);
+            if (v.unknownCmd)
+                this.#stdout.write(
+                    format(
+                        COLORS.red,
+                        `  ✗ Unknown command: "${v.unknownCmd}"`,
+                    ) + format(COLORS.gray, ' — type "help"\n\n'),
+                );
+            else if (v.needsSubcmd)
+                this.#stdout.write(
+                    format(
+                        COLORS.red,
+                        `  ✗ "${v.name}" requires a subcommand\n\n`,
+                    ),
+                );
+            else if (v.missingArgs)
+                this.#stdout.write(
+                    format(COLORS.red, "  ✗ Missing: ") +
+                        format(
+                            COLORS.yellow,
+                            v.missingArgs.map((a) => `<${a}>`).join(", "),
+                        ) +
+                        "\n\n",
+                );
+            this.#draw();
+            return;
+        }
+
+        const parts = raw.split(/\s+/).filter(Boolean);
+        const { reg, depth } = walkNS(parts, this.#registry);
+        const cmd = reg.get(parts[depth]!);
+        if (!cmd) return;
+
+        let run = cmd.run,
+            argParts = parts.slice(depth + 1);
+        if (cmd.commands) {
+            const sub = (cmd.commands as Registry).get(parts[depth + 1]!);
+            if (sub) {
+                run = sub.run;
+                argParts = parts.slice(depth + 2);
+            }
+        }
+
+        for (const fn of this.#before) {
+            try {
+                await fn(raw, this.context, this.globals);
+            } catch (e: any) {
+                this.#stdout.write(
+                    format(COLORS.red, `  ✗ ${e.message}\n\n`),
+                );
+                this.#draw();
+                return;
+            }
+        }
+        try {
+            if (run) {
+                await run(argParts, this.context, this.globals);
+                this.#stdout.write("\n");
+            }
+        } catch (e: any) {
+            this.#stdout.write(format(COLORS.red, `  ✗ ${e.message}\n\n`));
+        }
+        for (const fn of this.#after) await fn(raw, this.context, this.globals);
+
+        this.#draw();
+    }
+
+    async #flash(raw: string): Promise<void> {
+        this.#stdout.write(
+            `\x1b[1A\r\x1b[K` +
+                format(
+                    COLORS.red + COLORS.bold,
+                    strip(this.#activePrompt).trim(),
+                ) +
+                " " +
+                format(COLORS.red, raw),
+        );
+        await sleep(120);
+        this.#stdout.write("\n");
+    }
+
+    #registerBuiltins(): void {
+        this.command({
+            name: "help",
+            aliases: ["?"],
+            description: "List commands or: help <cmd>",
+            args: [
+                {
+                    name: "command",
+                    required: false,
+                    choices: () => this.#registry.names(),
+                },
+            ],
+            run: ([name]) => (name ? this.#helpCmd(name) : this.#printHelp()),
+        });
+
+        this.command({
+            name: "clear",
+            description: "Clear the screen",
+            run: () => {
+                this.#stdout.write("\x1b[2J\x1b[H")
+            },
+        });
+
+        this.command({
+            name: "js",
+            description: "Enter JavaScript Terminal Mode",
+            run: () => this.#enterJSMode(),
+        });
+
+        this.command({
+            name: "exit",
+            aliases: ["quit"],
+            description: "Exit",
+            run: () => this.#exit(),
+        });
+    }
+
+    #printHelp(): void {
+        const cmds = this.#registry.all();
+        const max = Math.max(...cmds.map((c) => c.name.length));
+        this.#stdout.write("\n");
+        for (const cmd of cmds) {
+            const name = format(
+                COLORS.cyan + COLORS.bold,
+                cmd.name.padEnd(max),
+            );
+            const aliases = cmd.aliases.length
+                ? format(COLORS.gray, ` (${cmd.aliases.join(", ")})`)
+                : "";
+            const sub = cmd.commands
+                ? format(COLORS.gray + COLORS.dim, " <subcommand>")
+                : "";
+            const args = cmd.args
+                .map((a) =>
+                    a.required
+                        ? format(COLORS.yellow, ` <${a.name}>`)
+                        : format(COLORS.gray, ` [${a.name}]`),
+                )
+                .join("");
+            const desc = format(
+                COLORS.white + COLORS.dim,
+                "  " + cmd.description,
+            );
+            this.#stdout.write(`  ${name}${aliases}${sub}${args}${desc}\n`);
+            if (cmd.commands) {
+                for (const s of (cmd.commands as Registry).all()) {
+                    const sa = s.args
+                        .map((a) =>
+                            a.required
+                                ? format(COLORS.yellow, ` <${a.name}>`)
+                                : format(COLORS.gray, ` [${a.name}]`),
+                        )
+                        .join("");
+                    this.#stdout.write(
+                        `    ${format(COLORS.blue, s.name.padEnd(10))}${sa}  ${format(COLORS.gray, s.description)}\n`,
+                    );
+                }
+            }
+        }
+        this.#stdout.write("\n");
+    }
+
+    #helpCmd(name: string): void {
+        const cmd = this.#registry.get(name);
+        if (!cmd) {
+            this.#stdout.write(
+                format(COLORS.red, `  No command "${name}"\n\n`),
+            );
+            return;
+        }
+        const usage = [
+            cmd.name,
+            ...cmd.args.map((a) =>
+                a.required ? `<${a.name}>` : `[${a.name}]`,
+            ),
+        ].join(" ");
+        this.#stdout.write(`\n  ${format(COLORS.bold, usage)}\n`);
+        if (cmd.aliases.length)
+            this.#stdout.write(
+                `  ${format(COLORS.gray, "aliases: " + cmd.aliases.join(", "))}\n`,
+            );
+        this.#stdout.write(`  ${cmd.description}\n`);
+        if (cmd.args.length) {
+            this.#stdout.write("\n");
+            for (const a of cmd.args) {
+                const tag = a.required
+                    ? format(COLORS.yellow, "<required>")
+                    : format(COLORS.gray, "[optional]");
+                
+                const choices = typeof a.choices === "function" ? a.choices('', ['<value>'], this.context, this.globals) : a.choices;
+                const cho = a.choices
+                    ? format(
+                          COLORS.gray,
+                          "  " +
+                              (choices || []).join(", "),
+                      )
+                    : "";
+                this.#stdout.write(
+                    `    ${format(COLORS.cyan, a.name.padEnd(14))} ${tag}${cho}\n`,
+                );
+            }
+        }
+        this.#stdout.write("\n");
+    }
+
+    #exit(): void {
+        const s = this.#state;
+        if (s.drawnDropdownLines > 0) {
+            let out = "\r\x1b[K";
+            for (let i = 0; i < s.drawnDropdownLines; i++) out += "\n\x1b[K";
+            this.#stdout.write(out);
+        }
+        this.#stdout.write("\n" + format(COLORS.gray, "  Exiting.\n"));
+        process.exit(0);
+    }
+}
+
+/**
+ * Functional utility constructing typed and structured command option values.
+ *
+ * @param name - Positional tracking key descriptive label.
+ * @param opts - Object constraints structuring optional/required flags and choice filters.
+ * @returns An unified configuration blueprint matching ArgDefinition constraints.
+ * * @public
+ */
+export const arg = (name: string, opts: { required?: boolean; choices?: ArgDefinition["choices"]; } = {}) => ({
+    name,
+    required: opts.required ?? true,
+    choices: opts.choices ?? null,
+});

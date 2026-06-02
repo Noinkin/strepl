@@ -1,0 +1,89 @@
+---
+
+title: Getting Started
+description: Learn how to install and configure stREPL in your runtime environment.
+
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+`stREPL` is a high-performance, context-aware orchestration framework for engineering advanced interactive command-line terminals, custom execution shells, and Read-Eval-Print Loops (REPL) inside Node.js applications.
+
+## Installation
+
+Install the package alongside your development environment dependencies.
+
+<Tabs>
+    <TabItem label="pnpm">
+    ```bash 
+    pnpm add strepl 
+    ```
+    </TabItem>
+    <TabItem label="npm">
+    ```bash 
+    npm install strepl
+    ```
+    </TabItem>
+    <TabItem label="yarn">
+    ```bash 
+    yarn add strepl 
+    ```
+    </TabItem>
+</Tabs>
+
+## Quick Start Guide
+
+Follow these steps to instantiate your custom terminal interface and configure your first predictive command loop.
+
+
+1. **Initialize the Core REPL Engine**
+Set up your primary console workspace layer and supply any active contextual memory maps or global utility objects:
+```typescript
+// src/cli.ts
+import { Repl } from 'strepl';
+
+const shell = new Repl({
+  context: {
+    user: 'developer',
+    authenticated: true,
+  },
+  globals: {
+    logger: console,
+  }
+});
+
+```
+
+
+2. **Register Context-Aware Commands**
+Attach structural operation commands using declarative definition parameters complete with explicit parameter validations and autocomplete hints:
+```typescript
+// src/cli.ts
+// (continued)
+shell.command({
+  name: 'deploy',
+  description: 'Trigger a clean deployment routine across structural target zones',
+  args: [
+    {
+      name: 'environment',
+      required: true,
+      choices: ['staging', 'production', 'development']
+    }
+  ],
+  run: async ([environment], context, globals) => {
+    console.log(`\nInitiating secure cloud release pipeline for: ${environment}`);
+    context.lastDeployed = environment;
+  }
+});
+
+```
+
+
+3. **Launch the Interface Loop**
+Mount low-level terminal interceptors to safely initiate keycapture event routines and establish raw text streaming conditions:
+```typescript
+// src/cli.ts
+// (continued)
+shell.start();
+
+```
