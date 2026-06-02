@@ -18,7 +18,7 @@ Designed specifically for building powerful developer toolkits, specialized data
 ## Installation
 
 ```bash
-npm install slate-repl-engine
+npm install streplts
 
 ```
 
@@ -29,8 +29,7 @@ npm install slate-repl-engine
 Instantiate a robust interactive console shell with multi-tiered commands and parameter completion constraints in just a few lines of code:
 
 ```typescript
-import { Repl, arg } from 'slate-repl-engine';
-import { pathCompleter } from 'slate-repl-engine/utils';
+import { Repl, arg, pathCompleter } from 'streplts';
 
 // 1. Initialize the engine with custom operational memory and tools
 const shell = new Repl({
