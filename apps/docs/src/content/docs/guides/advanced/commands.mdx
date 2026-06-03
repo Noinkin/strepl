@@ -1,0 +1,139 @@
+---
+
+title: Advanced Commands
+description: Master hierarchical command namespaces, dynamic argument completers, and contextual application routing.
+
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Once you have initialized your basic console loop, you can begin constructing complex, multi-tiered terminal control systems. `stREPL` uses a structured command declaration tree that decouples routing logic from execution handlers.
+
+## Nested Command Sub-Namespaces
+
+Instead of implementing flat, overly lengthy command names (e.g., `cluster-node-restart`), group your infrastructure workflows into high-level domains using sub-namespace routing branches.
+
+A command definition becomes a namespace whenever it includes a nested `commands` configuration block instead of an execution handler.
+
+```typescript
+import { Repl } from 'strepl';
+
+const shell = new Repl();
+
+shell.command({
+  name: 'cluster',
+  description: 'Manage active cluster deployment partitions',
+  commands: [
+    {
+      name: 'status',
+      description: 'Check connectivity health of cluster partitions',
+      run: async (args, context) => {
+        console.log('\nAll worker partitions report normal operational health.');
+      }
+    },
+    {
+      name: 'node',
+      description: 'Isolate or manage individual engine nodes',
+      commands: [
+        {
+          name: 'evict',
+          description: 'Force-evict an active node from consensus groups',
+          args: [{ name: 'nodeId', required: true }],
+          run: async ([nodeId]) => {
+            console.log(`\nEvicting target engine node: ${nodeId}`);
+          }
+        }
+      ]
+    }
+  ]
+});
+
+```
+
+This structural definition allows users to organically browse your shell by typing `cluster` to see sub-options, or executing `cluster node evict node-01` with automated argument context mapping.
+
+---
+
+## Dynamic Argument Auto-Completion
+
+Hardcoded autocomplete arrays are often insufficient when managing stateful data stores or interacting with remote infrastructures. The `choices` property on any argument definition can ingest an evaluation callback function.
+
+The callback provides the current string buffer, an array of prior parsed argument flags, the active application state memory, and your global tool utilities:
+
+```typescript
+import { Repl } from 'strepl';
+
+const shell = new Repl({
+  context: {
+    activeConnections: ['conn_alpha', 'conn_beta', 'conn_gamma']
+  }
+});
+
+shell.command({
+  name: 'disconnect',
+  description: 'Sever an active network runtime socket connection',
+  args: [
+    {
+      name: 'connectionId',
+      required: true,
+      // Dynamic evaluation callback
+      choices: (typed, previousArgs, context, globals) => {
+        // Filter elements matching what the engineer has typed so far
+        return context.activeConnections.filter((id) => id.startsWith(typed));
+      }
+    }
+  ],
+  run: async ([connectionId], context) => {
+    context.activeConnections = context.activeConnections.filter(id => id !== connectionId);
+    console.log(`\nSuccessfully severed target socket pipeline: ${connectionId}`);
+  }
+});
+
+```
+
+### Path Completer Blueprint
+
+You can leverage global properties inside your autocomplete handlers to build sophisticated native terminal capabilities—such as path mapping utilities:
+
+```typescript
+import { Repl } from 'strepl';
+import fs from 'node:fs';
+import path from 'node:path';
+
+const shell = new Repl({
+  globals: { fs, path }
+});
+
+shell.command({
+  name: 'load',
+  description: 'Ingest local configuration schema files',
+  args: [
+    {
+      name: 'filePath',
+      required: true,
+      choices: (typed, previousArgs, context, globals) => {
+        const fileSystem = globals.fs;
+        const pathUtil = globals.path;
+        
+        const searchDir = typed.includes('/') ? pathUtil.dirname(typed) : '.';
+        const baseName = pathUtil.basename(typed);
+
+        try {
+          if (!fileSystem.existsSync(searchDir)) return [];
+          const contents = fileSystem.readdirSync(searchDir);
+          
+          return contents
+            .filter(item => item.startsWith(baseName))
+            .map(item => pathUtil.join(searchDir, item));
+        } catch {
+          return [];
+        }
+      }
+    }
+  ],
+  run: async ([filePath]) => {
+    console.log(`\nProcessing ingestion matrix tracking: ${filePath}`);
+  }
+});
+
+```

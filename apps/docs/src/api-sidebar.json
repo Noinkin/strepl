@@ -115,5 +115,122 @@
         "slug": "api/strepl/walkns"
       }
     ]
+  },
+  {
+    "label": "STREPLTS",
+    "items": [
+      {
+        "label": "Streplts Package",
+        "slug": "api/streplts"
+      },
+      {
+        "label": "arg() function",
+        "slug": "api/streplts/arg"
+      },
+      {
+        "label": "ArgDefinition",
+        "slug": "api/streplts/argdefinition"
+      },
+      {
+        "label": "BaseCommand",
+        "slug": "api/streplts/basecommand"
+      },
+      {
+        "label": "colorInput() function",
+        "slug": "api/streplts/colorinput"
+      },
+      {
+        "label": "COLORS variable",
+        "slug": "api/streplts/colors"
+      },
+      {
+        "label": "CommandDefinition type",
+        "slug": "api/streplts/commanddefinition"
+      },
+      {
+        "label": "CommandInternal",
+        "slug": "api/streplts/commandinternal"
+      },
+      {
+        "label": "currentWord() function",
+        "slug": "api/streplts/currentword"
+      },
+      {
+        "label": "ExecutableCommand",
+        "slug": "api/streplts/executablecommand"
+      },
+      {
+        "label": "format() function",
+        "slug": "api/streplts/format"
+      },
+      {
+        "label": "getCandidates() function",
+        "slug": "api/streplts/getcandidates"
+      },
+      {
+        "label": "getHintArgs() function",
+        "slug": "api/streplts/gethintargs"
+      },
+      {
+        "label": "getJSCandidates() function",
+        "slug": "api/streplts/getjscandidates"
+      },
+      {
+        "label": "JSSandbox",
+        "slug": "api/streplts/jssandbox"
+      },
+      {
+        "label": "KEYS variable",
+        "slug": "api/streplts/keys"
+      },
+      {
+        "label": "NamespaceCommand",
+        "slug": "api/streplts/namespacecommand"
+      },
+      {
+        "label": "pathCompleter() function",
+        "slug": "api/streplts/pathcompleter"
+      },
+      {
+        "label": "Registry",
+        "slug": "api/streplts/registry"
+      },
+      {
+        "label": "render() function",
+        "slug": "api/streplts/render"
+      },
+      {
+        "label": "RenderOptions",
+        "slug": "api/streplts/renderoptions"
+      },
+      {
+        "label": "Repl",
+        "slug": "api/streplts/repl"
+      },
+      {
+        "label": "ReplOptions",
+        "slug": "api/streplts/reploptions"
+      },
+      {
+        "label": "ReplState",
+        "slug": "api/streplts/replstate"
+      },
+      {
+        "label": "sleep() function",
+        "slug": "api/streplts/sleep"
+      },
+      {
+        "label": "strip() function",
+        "slug": "api/streplts/strip"
+      },
+      {
+        "label": "validate() function",
+        "slug": "api/streplts/validate"
+      },
+      {
+        "label": "walkNS() function",
+        "slug": "api/streplts/walkns"
+      }
+    ]
   }
 ]

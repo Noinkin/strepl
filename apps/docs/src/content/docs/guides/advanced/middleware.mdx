@@ -1,0 +1,103 @@
+---
+
+title: Lifecycle Hooks & Middleware
+description: Guard terminal executions, automate system audits, and isolate engine parameters using chainable interceptor pipelines.
+
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+`stREPL` exposes chainable pre-execution and post-execution hooks. These middleware components let you manage access control boundaries, construct analytical run metrics, and securely inspect operations before they alter your application context.
+
+## Pre-Execution Interceptors (`before`)
+
+The `.before()` lifecycle hook fires immediately after an engineer hits `Enter`, but prior to processing argument validations or routing execution code. If any middleware function throws an exception, execution immediately breaks, safely flashing an inline console error.
+
+This architecture is ideal for establishing strict access control tokens or verifying operational configuration baselines:
+
+```typescript
+import { Repl } from 'strepl';
+
+const shell = new Repl({
+  context: {
+    userRole: 'guest',
+    isWriteLocked: true
+  }
+});
+
+// Interceptor 1: Universal Operational Auditing
+shell.before(async (rawLine, context, globals) => {
+  if (!rawLine.trim()) return;
+  // Send transaction footprints to diagnostic tools
+  globals.auditStream?.write(`[AUDIT] User attempted raw string sequence: ${rawLine}\n`);
+});
+
+// Interceptor 2: State-Based Access Security Guardrails
+shell.before(async (rawLine, context) => {
+  const destructiveCommands = ['drop', 'delete', 'evict'];
+  const usesDestructiveToken = destructiveCommands.some(cmd => rawLine.startsWith(cmd));
+
+  if (usesDestructiveToken && context.userRole !== 'administrator') {
+    throw new Error('Security Error: Insufficient cryptographic credentials for transaction.');
+  }
+
+  if (usesDestructiveToken && context.isWriteLocked) {
+    throw new Error('Database Error: Environment context is running under a strict read-only lock.');
+  }
+});
+
+```
+
+---
+
+## Post-Execution Interceptors (`after`)
+
+The `.after()` hook guarantees clean follow-up capabilities. It fires immediately after a target command complete its execution cycle successfully. Use post-execution loops to save state adjustments, update transaction logging registers, or clear terminal flags.
+
+```typescript
+import { Repl } from 'strepl';
+import fs from 'node:fs';
+
+const shell = new Repl({
+  context: { lastCommandExecuted: null },
+  globals: { fs }
+});
+
+shell.after(async (rawLine, context, globals) => {
+  const timestamp = new Date().toISOString();
+  context.lastCommandExecuted = rawLine;
+
+  // Persist session history frames directly to safe disk files
+  globals.fs.appendFileSync(
+    'session_history.log', 
+    `[${timestamp}] Executed successfully: ${rawLine}\n`
+  );
+});
+
+```
+
+---
+
+## Shared Middleware Pipeline Context
+
+Because both hook varieties receive structural mutable access to your core application `context`, you can orchestrate multi-tiered measurement layers—such as tracking execution duration:
+
+```typescript
+import { Repl } from 'strepl';
+
+const shell = new Repl();
+
+shell
+  .before(async (rawLine, context) => {
+    // Record baseline timing measurements
+    context.__performanceTimerStart = performance.now();
+  })
+  .after(async (rawLine, context) => {
+    const duration = performance.now() - context.__performanceTimerStart;
+    console.log(`\n(Execution finalized in ${duration.toFixed(2)}ms)`);
+    
+    // Clean up temporary tracking footprints
+    delete context.__performanceTimerStart;
+  });
+
+```

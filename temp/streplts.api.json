@@ -1,0 +1,2920 @@
+{
+  "metadata": {
+    "toolPackage": "@microsoft/api-extractor",
+    "toolVersion": "7.58.7",
+    "schemaVersion": 1011,
+    "oldestForwardsCompatibleVersion": 1001,
+    "tsdocConfig": {
+      "$schema": "https://developer.microsoft.com/json-schemas/tsdoc/v0/tsdoc.schema.json",
+      "noStandardTags": true,
+      "tagDefinitions": [
+        {
+          "tagName": "@alpha",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@beta",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@defaultValue",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@decorator",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@deprecated",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@eventProperty",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@example",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@experimental",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@inheritDoc",
+          "syntaxKind": "inline"
+        },
+        {
+          "tagName": "@internal",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@label",
+          "syntaxKind": "inline"
+        },
+        {
+          "tagName": "@link",
+          "syntaxKind": "inline",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@override",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@packageDocumentation",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@param",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@privateRemarks",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@public",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@readonly",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@remarks",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@returns",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@sealed",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@see",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@throws",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@typeParam",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@virtual",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@jsx",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@jsxRuntime",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@jsxFrag",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@jsxImportSource",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@betaDocumentation",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@internalRemarks",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@preapproved",
+          "syntaxKind": "modifier"
+        }
+      ],
+      "supportForTags": {
+        "@alpha": true,
+        "@beta": true,
+        "@defaultValue": true,
+        "@decorator": true,
+        "@deprecated": true,
+        "@eventProperty": true,
+        "@example": true,
+        "@experimental": true,
+        "@inheritDoc": true,
+        "@internal": true,
+        "@label": true,
+        "@link": true,
+        "@override": true,
+        "@packageDocumentation": true,
+        "@param": true,
+        "@privateRemarks": true,
+        "@public": true,
+        "@readonly": true,
+        "@remarks": true,
+        "@returns": true,
+        "@sealed": true,
+        "@see": true,
+        "@throws": true,
+        "@typeParam": true,
+        "@virtual": true,
+        "@betaDocumentation": true,
+        "@internalRemarks": true,
+        "@preapproved": true
+      },
+      "reportUnsupportedHtmlElements": false
+    }
+  },
+  "kind": "Package",
+  "canonicalReference": "streplts!",
+  "docComment": "/**\n * High-performance interactive Read-Eval-Print Loop (REPL) and custom execution shell engine.\n *\n * @remarks\n *\n * Provides a modular infrastructure for constructing command-line terminal applications. Features advanced sub-namespace resolution, context-aware command auto-completion pipelines, safe isolated sandboxed execution layers, and multi-line buffer history managers with dynamic console UI overlays.\n *\n * @packageDocumentation\n */\n",
+  "name": "streplts",
+  "preserveMemberOrder": false,
+  "members": [
+    {
+      "kind": "EntryPoint",
+      "canonicalReference": "streplts!",
+      "name": "",
+      "preserveMemberOrder": false,
+      "members": [
+        {
+          "kind": "Function",
+          "canonicalReference": "streplts!arg:function(1)",
+          "docComment": "/**\n * Functional utility constructing typed and structured command option values.\n *\n * @param name - Positional tracking key descriptive label.\n *\n * @param opts - Object constraints structuring optional/required flags and choice filters.\n *\n * @returns An unified configuration blueprint matching ArgDefinition constraints. *\n *\n * @public\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "arg: (name: "
+            },
+            {
+              "kind": "Content",
+              "text": "string"
+            },
+            {
+              "kind": "Content",
+              "text": ", opts?: "
+            },
+            {
+              "kind": "Content",
+              "text": "{\n    required?: boolean;\n    choices?: "
+            },
+            {
+              "kind": "Reference",
+              "text": "ArgDefinition",
+              "canonicalReference": "streplts!ArgDefinition:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "[\"choices\"];\n}"
+            },
+            {
+              "kind": "Content",
+              "text": ") => "
+            },
+            {
+              "kind": "Content",
+              "text": "{\n    name: string;\n    required: boolean;\n    choices: string[] | ((typed: string, previousArgs: string[], context: any, globals: any) => string[]) | null;\n}"
+            }
+          ],
+          "fileUrlPath": "src/repl.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 7,
+            "endIndex": 8
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "name",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "opts",
+              "parameterTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 6
+              },
+              "isOptional": true
+            }
+          ],
+          "name": "arg"
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "streplts!ArgDefinition:interface",
+          "docComment": "/**\n * Structural definition specifying configuration and validation metadata for a command parameter.\n *\n * @remarks\n *\n * Used by the completion and validation pipelines to assert bounds on runtime inputs, provide interactive visual arguments hints, and produce suggestion list arrays.\n *\n * @public\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface ArgDefinition "
+            }
+          ],
+          "fileUrlPath": "src/types.ts",
+          "releaseTag": "Public",
+          "name": "ArgDefinition",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!ArgDefinition#choices:member",
+              "docComment": "/**\n * An static string array or a dynamic evaluation closure generating eligible autocomplete variations.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "choices?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string[] | ((typed: string, previousArgs: string[], context: any, globals: any) => string[]) | null"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "choices",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!ArgDefinition#name:member",
+              "docComment": "/**\n * The unique identifier labeling the target positional command argument.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "name: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "name",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!ArgDefinition#required:member",
+              "docComment": "/**\n * Flags whether execution fails immediately if this positional parameter is not filled.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "required: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "required",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "streplts!BaseCommand:interface",
+          "docComment": "/**\n * Common base descriptor shared across all command nodes within the execution hierarchy.\n *\n * @public\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface BaseCommand "
+            }
+          ],
+          "fileUrlPath": "src/types.ts",
+          "releaseTag": "Public",
+          "name": "BaseCommand",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!BaseCommand#aliases:member",
+              "docComment": "/**\n * Optional secondary string phrases that substitute as aliases for matching the root label.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "aliases?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "aliases",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!BaseCommand#description:member",
+              "docComment": "/**\n * Summarized contextual purpose string written inside help layouts explaining functional capabilities.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "description?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "description",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!BaseCommand#name:member",
+              "docComment": "/**\n * The token label matching the textual entry input identifying the command execution route.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "name: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "name",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "streplts!colorInput:function(1)",
+          "docComment": "/**\n * Tokenizes, checks syntax paths, and colorizes input lines with full ANSI tags.\n *\n * @param input - The plain string line contents.\n *\n * @param registry - Active hierarchical navigation dictionary mappings.\n *\n * @param jsMode - Flags if JavaScript lexical rules overwrite normal arguments tokens.\n *\n * @param context - Stateful parameter variables map.\n *\n * @param globals - Embedded application environmental global tools.\n *\n * @returns Complete colorized text safe for active terminal standard output writers. *\n *\n * @public\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function colorInput(input: "
+            },
+            {
+              "kind": "Content",
+              "text": "string"
+            },
+            {
+              "kind": "Content",
+              "text": ", registry: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Registry",
+              "canonicalReference": "streplts!Registry:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", jsMode: "
+            },
+            {
+              "kind": "Content",
+              "text": "boolean"
+            },
+            {
+              "kind": "Content",
+              "text": ", context: "
+            },
+            {
+              "kind": "Content",
+              "text": "any"
+            },
+            {
+              "kind": "Content",
+              "text": ", globals: "
+            },
+            {
+              "kind": "Content",
+              "text": "any"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "string"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/utils/completion.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 11,
+            "endIndex": 12
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "input",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "registry",
+              "parameterTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "jsMode",
+              "parameterTypeTokenRange": {
+                "startIndex": 5,
+                "endIndex": 6
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "context",
+              "parameterTypeTokenRange": {
+                "startIndex": 7,
+                "endIndex": 8
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "globals",
+              "parameterTypeTokenRange": {
+                "startIndex": 9,
+                "endIndex": 10
+              },
+              "isOptional": false
+            }
+          ],
+          "name": "colorInput"
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "streplts!COLORS:var",
+          "docComment": "/**\n * Collection of ANSI terminal text color escape sequences. *\n *\n * @public\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "COLORS: "
+            },
+            {
+              "kind": "Content",
+              "text": "{\n    readonly reset: \"\\u001B[0m\";\n    readonly bold: \"\\u001B[1m\";\n    readonly dim: \"\\u001B[2m\";\n    readonly cyan: \"\\u001B[96m\";\n    readonly green: \"\\u001B[92m\";\n    readonly yellow: \"\\u001B[93m\";\n    readonly red: \"\\u001B[91m\";\n    readonly gray: \"\\u001B[90m\";\n    readonly white: \"\\u001B[97m\";\n    readonly blue: \"\\u001B[94m\";\n    readonly up: (n: number) => string;\n    readonly right: (n: number) => string;\n    readonly left: (n: number) => string;\n}"
+            }
+          ],
+          "fileUrlPath": "src/utils/ansi.ts",
+          "isReadonly": true,
+          "releaseTag": "Public",
+          "name": "COLORS",
+          "variableTypeTokenRange": {
+            "startIndex": 1,
+            "endIndex": 2
+          }
+        },
+        {
+          "kind": "TypeAlias",
+          "canonicalReference": "streplts!CommandDefinition:type",
+          "docComment": "/**\n * Union definition representing either a direct execution target or a structural namespace node.\n *\n * @public\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export type CommandDefinition = "
+            },
+            {
+              "kind": "Reference",
+              "text": "ExecutableCommand",
+              "canonicalReference": "streplts!ExecutableCommand:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " | "
+            },
+            {
+              "kind": "Reference",
+              "text": "NamespaceCommand",
+              "canonicalReference": "streplts!NamespaceCommand:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/types.ts",
+          "releaseTag": "Public",
+          "name": "CommandDefinition",
+          "typeTokenRange": {
+            "startIndex": 1,
+            "endIndex": 4
+          }
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "streplts!CommandInternal:interface",
+          "docComment": "/**\n * Canonical model format maintained within internal registration map storage definitions.\n *\n * @internal\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface CommandInternal "
+            }
+          ],
+          "fileUrlPath": "src/types.ts",
+          "releaseTag": "Internal",
+          "name": "CommandInternal",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!CommandInternal#aliases:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "aliases: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Internal",
+              "name": "aliases",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!CommandInternal#args:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "args: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "ArgDefinition",
+                  "canonicalReference": "streplts!ArgDefinition:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Internal",
+              "name": "args",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!CommandInternal#commands:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "commands: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "any | null"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Internal",
+              "name": "commands",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!CommandInternal#description:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "description: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Internal",
+              "name": "description",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!CommandInternal#name:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "name: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Internal",
+              "name": "name",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!CommandInternal#run:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "run: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "((args: string[], context: any, globals: any) => void | "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<void>) | null"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Internal",
+              "name": "run",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 4
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "streplts!currentWord:function(1)",
+          "docComment": "/**\n * Extracts the final contiguous word segment token from an input text sequence line.\n *\n * @param input - The text stream buffer content.\n *\n * @returns Isolated active phrase slice or empty string. *\n *\n * @public\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function currentWord(input: "
+            },
+            {
+              "kind": "Content",
+              "text": "string"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "string"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/utils/completion.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 3,
+            "endIndex": 4
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "input",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": false
+            }
+          ],
+          "name": "currentWord"
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "streplts!ExecutableCommand:interface",
+          "docComment": "/**\n * Complete specification for a leaf execution target containing operational hooks and terminal arguments.\n *\n * @remarks\n *\n * Represents a definitive final command leaf that processes active inputs and performs application runtime operations.\n *\n * @public\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface ExecutableCommand extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "BaseCommand",
+              "canonicalReference": "streplts!BaseCommand:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "fileUrlPath": "src/types.ts",
+          "releaseTag": "Public",
+          "name": "ExecutableCommand",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!ExecutableCommand#args:member",
+              "docComment": "/**\n * Collection of argument parameter bounds defining names, constraints, and custom completions.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "args?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "ArgDefinition",
+                  "canonicalReference": "streplts!ArgDefinition:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "args",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!ExecutableCommand#commands:member",
+              "docComment": "/**\n * Disallowed property structure forcing mutual exclusivity with branch namespaces.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "commands?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "never"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "commands",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!ExecutableCommand#run:member",
+              "docComment": "/**\n * Execution callback invoked when the parser completes traversal validation matching this definition. *\n *\n * @param args - Sanitized argument token list parsed from user raw string inputs.\n *\n * @param context - Reference to application mutational memory states.\n *\n * @param globals - Attached static module references or environmental injection toolkits.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "run: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "(args: string[], context: any, globals: any) => void | "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<void>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "run",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 4
+              }
+            }
+          ],
+          "extendsTokenRanges": [
+            {
+              "startIndex": 1,
+              "endIndex": 2
+            }
+          ]
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "streplts!format:function(1)",
+          "docComment": "/**\n * Decorates a string sequence with a targeted ANSI formatting prefix color and clear reset code.\n *\n * @param col - Target ANSI color configuration code snippet.\n *\n * @param s - Target textual payload contents to transform.\n *\n * @returns Formatted colored string. *\n *\n * @public\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "format: (col: "
+            },
+            {
+              "kind": "Content",
+              "text": "string"
+            },
+            {
+              "kind": "Content",
+              "text": ", s: "
+            },
+            {
+              "kind": "Content",
+              "text": "string"
+            },
+            {
+              "kind": "Content",
+              "text": ") => "
+            },
+            {
+              "kind": "Content",
+              "text": "string"
+            }
+          ],
+          "fileUrlPath": "src/utils/ansi.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 5,
+            "endIndex": 6
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "col",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "s",
+              "parameterTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "isOptional": false
+            }
+          ],
+          "name": "format"
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "streplts!getCandidates:function(1)",
+          "docComment": "/**\n * Scans, processes, and extracts eligible auto-complete string arrays based on input strings.\n *\n * @param input - Current console layout string values.\n *\n * @param registry - Master route mapping configuration layer.\n *\n * @param context - Mutational shared analytical context space variables.\n *\n * @param globals - Framework tools mapping container records.\n *\n * @returns Filtered matched suggestion phrases. *\n *\n * @public\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function getCandidates(input: "
+            },
+            {
+              "kind": "Content",
+              "text": "string"
+            },
+            {
+              "kind": "Content",
+              "text": ", registry: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Registry",
+              "canonicalReference": "streplts!Registry:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", context: "
+            },
+            {
+              "kind": "Content",
+              "text": "any"
+            },
+            {
+              "kind": "Content",
+              "text": ", globals: "
+            },
+            {
+              "kind": "Content",
+              "text": "any"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "string[]"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/utils/completion.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 9,
+            "endIndex": 10
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "input",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "registry",
+              "parameterTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "context",
+              "parameterTypeTokenRange": {
+                "startIndex": 5,
+                "endIndex": 6
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "globals",
+              "parameterTypeTokenRange": {
+                "startIndex": 7,
+                "endIndex": 8
+              },
+              "isOptional": false
+            }
+          ],
+          "name": "getCandidates"
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "streplts!getHintArgs:function(1)",
+          "docComment": "/**\n * Identifies and isolates missing arguments definitions remaining to satisfy commands.\n *\n * @param input - Active prompt text line layout.\n *\n * @param registry - Root lookup configuration map structures.\n *\n * @returns Array collection containing tail parameter definitions. *\n *\n * @public\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function getHintArgs(input: "
+            },
+            {
+              "kind": "Content",
+              "text": "string"
+            },
+            {
+              "kind": "Content",
+              "text": ", registry: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Registry",
+              "canonicalReference": "streplts!Registry:class"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Reference",
+              "text": "ArgDefinition",
+              "canonicalReference": "streplts!ArgDefinition:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "[]"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/utils/completion.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 5,
+            "endIndex": 7
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "input",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "registry",
+              "parameterTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "isOptional": false
+            }
+          ],
+          "name": "getHintArgs"
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "streplts!getJSCandidates:function(1)",
+          "docComment": "/**\n * Inspects isolated VM object models to compute predictive JavaScript property keys.\n *\n * @param input - The active script code phrase segment.\n *\n * @param sandboxRoot - Activated proxy model monitoring local variables.\n *\n * @returns Matching candidates properties alongside targeted modification span lengths. *\n *\n * @public\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function getJSCandidates(input: "
+            },
+            {
+              "kind": "Content",
+              "text": "string"
+            },
+            {
+              "kind": "Content",
+              "text": ", sandboxRoot: "
+            },
+            {
+              "kind": "Content",
+              "text": "any"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "{\n    candidates: string[];\n    replaceLen: number;\n}"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/utils/completion.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 5,
+            "endIndex": 6
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "input",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "sandboxRoot",
+              "parameterTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "isOptional": false
+            }
+          ],
+          "name": "getJSCandidates"
+        },
+        {
+          "kind": "Class",
+          "canonicalReference": "streplts!JSSandbox:class",
+          "docComment": "/**\n * Isolated sandboxed evaluation scope running calculations via core V8 VM contexts.\n *\n * @remarks\n *\n * Restricts top-level leakage, injects explicit console/asynchronous tools safely, and handles top-level await syntax rewrites gracefully with short timeout thresholds.\n *\n * @public\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare class JSSandbox "
+            }
+          ],
+          "fileUrlPath": "src/sandbox.ts",
+          "releaseTag": "Public",
+          "isAbstract": false,
+          "name": "JSSandbox",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "Constructor",
+              "canonicalReference": "streplts!JSSandbox:constructor(1)",
+              "docComment": "/**\n * Instantiates an isolated execution context box layer.\n *\n * @param context - Reference container shared mapping internal states.\n *\n * @param globals - Toolkits and dependency properties injected directly for runtime lookups.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "constructor(context: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Record",
+                  "canonicalReference": "!Record:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<string, any>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", globals: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Record",
+                  "canonicalReference": "!Record:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<string, any>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ");"
+                }
+              ],
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "context",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 3
+                  },
+                  "isOptional": false
+                },
+                {
+                  "parameterName": "globals",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 4,
+                    "endIndex": 6
+                  },
+                  "isOptional": false
+                }
+              ]
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "streplts!JSSandbox#eval:member(1)",
+              "docComment": "/**\n * Process, intercepts, converts and safely runs raw string scripts against internal V8 VM layers.\n *\n * @param code - The string expression or statement sequence script to parse and execute.\n *\n * @returns Inspected formatted data string representation, or `null` if resolution provides no value.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "eval(code: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<string | null>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 5
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "code",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ],
+              "isOptional": false,
+              "isAbstract": false,
+              "name": "eval"
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "streplts!JSSandbox#root:member",
+              "docComment": "/**\n * Resolves an proxy interface managing root context lookups and state bindings.\n *\n * @remarks\n *\n * Dynamically exposes explicitly declared top-level script statements as properties.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get root(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "any"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "root",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false,
+              "isProtected": false,
+              "isAbstract": false
+            }
+          ],
+          "implementsTokenRanges": []
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "streplts!KEYS:var",
+          "docComment": "/**\n * Standard mapping collection identifying specialized input stream key sequences. *\n *\n * @public\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "KEYS: "
+            },
+            {
+              "kind": "Content",
+              "text": "{\n    readonly ctrlC: \"\\u0003\";\n    readonly ctrlD: \"\\u0004\";\n    readonly ctrlU: \"\\u0015\";\n    readonly ctrlA: \"\\u0001\";\n    readonly ctrlV: \"\\u0016\";\n    readonly altC: \"\\u001Bc\";\n    readonly altC2: \"\\u001BC\";\n    readonly altV: \"\\u001Bv\";\n    readonly altV2: \"\\u001BV\";\n    readonly ctrlShiftC: \"\\u001B\\u0003\";\n    readonly escape: \"\\u001B\";\n    readonly enter: \"\\r\";\n    readonly backspace: \"\";\n    readonly tab: \"\\t\";\n    readonly space: \" \";\n    readonly arrowRight: \"\\u001B[C\";\n    readonly arrowUp: \"\\u001B[A\";\n    readonly arrowDown: \"\\u001B[B\";\n    readonly arrowLeft: \"\\u001B[D\";\n    readonly shiftLeft: \"\\u001B[1;2D\";\n    readonly shiftRight: \"\\u001B[1;2C\";\n}"
+            }
+          ],
+          "fileUrlPath": "src/utils/ansi.ts",
+          "isReadonly": true,
+          "releaseTag": "Public",
+          "name": "KEYS",
+          "variableTypeTokenRange": {
+            "startIndex": 1,
+            "endIndex": 2
+          }
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "streplts!NamespaceCommand:interface",
+          "docComment": "/**\n * Nested structural boundary housing child executable commands or secondary sub-namespaces.\n *\n * @remarks\n *\n * Used to group groups of logically continuous operations under a unified command prefix pathway.\n *\n * @public\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface NamespaceCommand extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "BaseCommand",
+              "canonicalReference": "streplts!BaseCommand:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "fileUrlPath": "src/types.ts",
+          "releaseTag": "Public",
+          "name": "NamespaceCommand",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!NamespaceCommand#args:member",
+              "docComment": "/**\n * Disallowed property structure forcing mutual exclusivity with leaf executions.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "args?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "never"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "args",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!NamespaceCommand#commands:member",
+              "docComment": "/**\n * Subordinate directory hierarchy of registered command nodes nested inside this container context.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "commands: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "CommandDefinition",
+                  "canonicalReference": "streplts!CommandDefinition:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "commands",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!NamespaceCommand#run:member",
+              "docComment": "/**\n * Disallowed property structure forcing mutual exclusivity with leaf executions.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "run?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "never"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "run",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": [
+            {
+              "startIndex": 1,
+              "endIndex": 2
+            }
+          ]
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "streplts!pathCompleter:function(1)",
+          "docComment": "/**\n * High-performance file path completion builder mapping real directory systems onto option choices.\n *\n * @remarks\n *\n * Dynamically resolves slash trends across platforms, queries synchronous local filesystem boundaries, filters trailing types, and appends directory directory context indicators.\n *\n * @param options - Toggles adjusting directory searches.\n *\n * @returns A structured contextual choice generator function compliant with `ArgDefinition[\"choices\"]`. *\n *\n * @public\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function pathCompleter(options?: "
+            },
+            {
+              "kind": "Content",
+              "text": "{\n    onlyDirs?: boolean;\n}"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "(typed: string, previousArgs: string[], context: any, globals: any) => string[]"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/utils/completion.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 3,
+            "endIndex": 4
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "options",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": true
+            }
+          ],
+          "name": "pathCompleter"
+        },
+        {
+          "kind": "Class",
+          "canonicalReference": "streplts!Registry:class",
+          "docComment": "/**\n * Core command resolution hierarchical routing dictionary structure.\n *\n * @remarks\n *\n * Maintains an internal identifier mapping of lookup keys, primary names, and input command definitions enabling recursive execution and token lookups.\n *\n * @public\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare class Registry "
+            }
+          ],
+          "fileUrlPath": "src/registry.ts",
+          "releaseTag": "Public",
+          "isAbstract": false,
+          "name": "Registry",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "Method",
+              "canonicalReference": "streplts!Registry#add:member(1)",
+              "docComment": "/**\n * Registers a new command schema pattern or a sub-namespace index node tree under this router.\n *\n * @param def - The command target configuration schema structure.\n *\n * @returns The contextual registry instance enabling fluent operational composition.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "add(def: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "CommandDefinition",
+                  "canonicalReference": "streplts!CommandDefinition:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "this"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "def",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ],
+              "isOptional": false,
+              "isAbstract": false,
+              "name": "add"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "streplts!Registry#all:member(1)",
+              "docComment": "/**\n * Assembles a collection containing all distinct command structures stored under this map layer.\n *\n * @remarks\n *\n * Filters out duplicate structural entries mapped via aliases, supplying unique instances.\n *\n * @returns An array containing unique internal command models.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "all(): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "CommandInternal",
+                  "canonicalReference": "streplts!CommandInternal:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [],
+              "isOptional": false,
+              "isAbstract": false,
+              "name": "all"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "streplts!Registry#get:member(1)",
+              "docComment": "/**\n * Performs a direct match retrieval for a registered item by primary key name or structural alias.\n *\n * @param n - The query phrase matching command string identifiers.\n *\n * @returns The matching object metadata model, or `undefined` if none is found.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get(n: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "CommandInternal",
+                  "canonicalReference": "streplts!CommandInternal:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": " | undefined"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 5
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "n",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ],
+              "isOptional": false,
+              "isAbstract": false,
+              "name": "get"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "streplts!Registry#names:member(1)",
+              "docComment": "/**\n * Extracts an array sequence containing all operational match labels, including all aliases.\n *\n * @returns Complete structural collection list representing all accessible entry keys.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "names(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [],
+              "isOptional": false,
+              "isAbstract": false,
+              "name": "names"
+            }
+          ],
+          "implementsTokenRanges": []
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "streplts!render:function(1)",
+          "docComment": "/**\n * Draws the active terminal state line and overlay menus onto the output stream.\n *\n * @remarks\n *\n * Calculates previous drop lists, prints ghost hints, adds syntax text-coloring tokens, renders scrolling window overlays for overflows, and highlights selection blocks.\n *\n * @param state - Current mutational operational status values.\n *\n * @param registry - Storage collection of command matching metadata records.\n *\n * @param promptStr - Active text prompt configuration sequence string.\n *\n * @param jsMode - Toggle flag specifying if Javascript VM syntax is active.\n *\n * @param opts - Extensible formatting overrides like highlighted errors.\n *\n * @param stdout - Output channel pipeline interface destination receiving strings.\n *\n * @param context - Sandbox references map.\n *\n * @param globals - System variables reference. *\n *\n * @public\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function render(state: "
+            },
+            {
+              "kind": "Reference",
+              "text": "ReplState",
+              "canonicalReference": "streplts!ReplState:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ", registry: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Registry",
+              "canonicalReference": "streplts!Registry:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", promptStr: "
+            },
+            {
+              "kind": "Content",
+              "text": "string"
+            },
+            {
+              "kind": "Content",
+              "text": ", jsMode: "
+            },
+            {
+              "kind": "Content",
+              "text": "boolean"
+            },
+            {
+              "kind": "Content",
+              "text": ", opts: "
+            },
+            {
+              "kind": "Reference",
+              "text": "RenderOptions",
+              "canonicalReference": "streplts!RenderOptions:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " | undefined"
+            },
+            {
+              "kind": "Content",
+              "text": ", stdout: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Writable",
+              "canonicalReference": "!\"\\\"node:stream\\\"\".Stream.Writable:class"
+            },
+            {
+              "kind": "Content",
+              "text": " & {\n    columns?: number;\n}"
+            },
+            {
+              "kind": "Content",
+              "text": ", context: "
+            },
+            {
+              "kind": "Content",
+              "text": "any"
+            },
+            {
+              "kind": "Content",
+              "text": ", globals: "
+            },
+            {
+              "kind": "Content",
+              "text": "any"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "void"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/renderer.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 19,
+            "endIndex": 20
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "state",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "registry",
+              "parameterTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "promptStr",
+              "parameterTypeTokenRange": {
+                "startIndex": 5,
+                "endIndex": 6
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "jsMode",
+              "parameterTypeTokenRange": {
+                "startIndex": 7,
+                "endIndex": 8
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "opts",
+              "parameterTypeTokenRange": {
+                "startIndex": 9,
+                "endIndex": 11
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "stdout",
+              "parameterTypeTokenRange": {
+                "startIndex": 12,
+                "endIndex": 14
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "context",
+              "parameterTypeTokenRange": {
+                "startIndex": 15,
+                "endIndex": 16
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "globals",
+              "parameterTypeTokenRange": {
+                "startIndex": 17,
+                "endIndex": 18
+              },
+              "isOptional": false
+            }
+          ],
+          "name": "render"
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "streplts!RenderOptions:interface",
+          "docComment": "/**\n * UI visual overrides applied on rendering operations.\n *\n * @public\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface RenderOptions "
+            }
+          ],
+          "fileUrlPath": "src/types.ts",
+          "releaseTag": "Public",
+          "name": "RenderOptions",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!RenderOptions#flashError:member",
+              "docComment": "/**\n * Forces the current text prompt frame to flash a highlighted error visual accent state.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "flashError?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "flashError",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Class",
+          "canonicalReference": "streplts!Repl:class",
+          "docComment": "/**\n * Primary stateful orchestrator managing terminal streams, inputs, UI rendering, and script evaluation.\n *\n * @remarks\n *\n * Instantiates terminal raw environments to manage input text buffers, processes visual dropdown multi-line items, and maintains history and selection spaces for customized user sessions.\n *\n * @public\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare class Repl "
+            }
+          ],
+          "fileUrlPath": "src/repl.ts",
+          "releaseTag": "Public",
+          "isAbstract": false,
+          "name": "Repl",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "Constructor",
+              "canonicalReference": "streplts!Repl:constructor(1)",
+              "docComment": "/**\n * Initializes an instances of the interactive REPL shell environment.\n *\n * @param opts - Initialization parameters structuring system context records and stream pipes.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "constructor(opts?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "ReplOptions",
+                  "canonicalReference": "streplts!ReplOptions:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ");"
+                }
+              ],
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "opts",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": true
+                }
+              ]
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "streplts!Repl#after:member(1)",
+              "docComment": "/**\n * Registers a post-execution completion monitoring hook triggered when commands finalize correctly.\n *\n * @param fn - Post-execution diagnostic monitoring function.\n *\n * @returns Context instance enabling chained monitoring definitions.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "after(fn: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "HookFn",
+                  "canonicalReference": "streplts!~HookFn:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "this"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "fn",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ],
+              "isOptional": false,
+              "isAbstract": false,
+              "name": "after"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "streplts!Repl#before:member(1)",
+              "docComment": "/**\n * Registers an interception hook executing prior to executing valid matching user inputs.\n *\n * @param fn - Interceptor block function. Throwing inside halts downstream command executions.\n *\n * @returns Context instance enabling chained interceptor definitions.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "before(fn: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "HookFn",
+                  "canonicalReference": "streplts!~HookFn:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "this"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "fn",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ],
+              "isOptional": false,
+              "isAbstract": false,
+              "name": "before"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "streplts!Repl#command:member(1)",
+              "docComment": "/**\n * Fluent interface attaching an executable or namespace definition to the application environment.\n *\n * @param def - Target layout configuring paths, command targets, or branch directories.\n *\n * @returns Context instance enabling chained command attachments.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "command(def: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "CommandDefinition",
+                  "canonicalReference": "streplts!CommandDefinition:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "this"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "def",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ],
+              "isOptional": false,
+              "isAbstract": false,
+              "name": "command"
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "streplts!Repl#context:member",
+              "docComment": "/**\n * Contextual operational application state accessible in custom command hooks and run pipelines.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "context: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Record",
+                  "canonicalReference": "!Record:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<string, any>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "context",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              },
+              "isStatic": false,
+              "isProtected": false,
+              "isAbstract": false
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "streplts!Repl#globals:member",
+              "docComment": "/**\n * Registered structural package tooling and globals bound into Javascript VM contexts.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "globals: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Record",
+                  "canonicalReference": "!Record:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<string, any>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "globals",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              },
+              "isStatic": false,
+              "isProtected": false,
+              "isAbstract": false
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "streplts!Repl#start:member(1)",
+              "docComment": "/**\n * Switches the selected stream target to interactive raw conditions and spins up active key reading pipelines.\n *\n * @returns Reference to this active execution framework instance.\n *\n * @throws\n *\n * Error - Thrown if the initialized input stream device is not an interactive terminal environment.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "start(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "this"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [],
+              "isOptional": false,
+              "isAbstract": false,
+              "name": "start"
+            }
+          ],
+          "implementsTokenRanges": []
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "streplts!ReplOptions:interface",
+          "docComment": "/**\n * Configuration options required to instantiate a interactive terminal REPL runtime environment instance.\n *\n * @public\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface ReplOptions "
+            }
+          ],
+          "fileUrlPath": "src/types.ts",
+          "releaseTag": "Public",
+          "name": "ReplOptions",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!ReplOptions#context:member",
+              "docComment": "/**\n * Mutational contextual execution state records shared and readable by commands.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "context?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Record",
+                  "canonicalReference": "!Record:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<string, any>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "context",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!ReplOptions#globals:member",
+              "docComment": "/**\n * Utilities, environmental bridges, and third-party dependency modules accessible inside tasks.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "globals?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Record",
+                  "canonicalReference": "!Record:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<string, any>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "globals",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!ReplOptions#stdin:member",
+              "docComment": "/**\n * Input listener streaming interface emitting character buffers. Defaults to `process.stdin`.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "stdin?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Readable",
+                  "canonicalReference": "!\"\\\"node:stream\\\"\".Stream.Readable:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": " & {\n        isTTY?: boolean;\n        setRawMode?: (mode: boolean) => void;\n    }"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "stdin",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!ReplOptions#stdout:member",
+              "docComment": "/**\n * Output writing channel receiving ANSI text payloads. Defaults to `process.stdout`.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "stdout?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Writable",
+                  "canonicalReference": "!\"\\\"node:stream\\\"\".Stream.Writable:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": " & {\n        columns?: number;\n    }"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "stdout",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "streplts!ReplState:interface",
+          "docComment": "/**\n * Data store monitoring cursor tracking, buffer inputs, and selection state offsets inside an active session.\n *\n * @public\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface ReplState "
+            }
+          ],
+          "fileUrlPath": "src/types.ts",
+          "releaseTag": "Public",
+          "name": "ReplState",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!ReplState#candidates:member",
+              "docComment": "/**\n * Filtered selection match results populated to generate prompt suggestion interfaces.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "candidates: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "candidates",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!ReplState#completionIdx:member",
+              "docComment": "/**\n * Selection index tracking the actively focused list entry within the drop UI structure.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "completionIdx: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "completionIdx",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!ReplState#cursor:member",
+              "docComment": "/**\n * Numeric absolute offset index indicating where the text input insertion caret resides.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "cursor: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "cursor",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!ReplState#drawnDropdownLines:member",
+              "docComment": "/**\n * Total calculated lines populated during the previous repaint cycle to ensure precise cursor rewinds.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "drawnDropdownLines: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "drawnDropdownLines",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!ReplState#input:member",
+              "docComment": "/**\n * The current unmodified textual contents visible inside the text entry editor line.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "input: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "input",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!ReplState#jsCandidates:member",
+              "docComment": "/**\n * Filtered matching keys computed against global targets while operating inside JavaScript Evaluation modes.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "jsCandidates: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "jsCandidates",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!ReplState#jsReplaceLen:member",
+              "docComment": "/**\n * The text span character length intended for removal upon picking a JavaScript candidate selection.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "jsReplaceLen: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "jsReplaceLen",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!ReplState#selectionAnchor:member",
+              "docComment": "/**\n * The starting index offset marker where an highlighted block selection range commences.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "selectionAnchor: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number | null"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "selectionAnchor",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "streplts!sleep:function(1)",
+          "docComment": "/**\n * Halts pipeline execution workflows for a designated duration span.\n *\n * @param ms - Absolute milliseconds duration boundary to wait.\n *\n * @returns A microtask promise monitoring resolution. *\n *\n * @public\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "sleep: (ms: "
+            },
+            {
+              "kind": "Content",
+              "text": "number"
+            },
+            {
+              "kind": "Content",
+              "text": ") => "
+            },
+            {
+              "kind": "Reference",
+              "text": "Promise",
+              "canonicalReference": "!Promise:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<void>"
+            }
+          ],
+          "fileUrlPath": "src/utils/ansi.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 3,
+            "endIndex": 5
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "ms",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": false
+            }
+          ],
+          "name": "sleep"
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "streplts!strip:function(1)",
+          "docComment": "/**\n * Removes all embedded ANSI terminal color format escape codes from a text segment.\n *\n * @param s - Input string containing color tags.\n *\n * @returns Clean raw plaintext contents. *\n *\n * @public\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "strip: (s: "
+            },
+            {
+              "kind": "Content",
+              "text": "string"
+            },
+            {
+              "kind": "Content",
+              "text": ") => "
+            },
+            {
+              "kind": "Content",
+              "text": "string"
+            }
+          ],
+          "fileUrlPath": "src/utils/ansi.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 3,
+            "endIndex": 4
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "s",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": false
+            }
+          ],
+          "name": "strip"
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "streplts!validate:function(1)",
+          "docComment": "/**\n * Asserts structural grammar validation, verifying sub-namespaces and ensuring all required parameters are specified.\n *\n * @param input - The raw statement line string intended for execution.\n *\n * @param registry - Hierarchical routing definitions tree.\n *\n * @returns Status validation diagnostic object. *\n *\n * @public\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function validate(input: "
+            },
+            {
+              "kind": "Content",
+              "text": "string"
+            },
+            {
+              "kind": "Content",
+              "text": ", registry: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Registry",
+              "canonicalReference": "streplts!Registry:class"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "{\n    ok: boolean;\n    unknownCmd?: string;\n    needsSubcmd?: boolean;\n    name?: string;\n    missingArgs?: string[];\n}"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/utils/completion.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 5,
+            "endIndex": 6
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "input",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "registry",
+              "parameterTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "isOptional": false
+            }
+          ],
+          "name": "validate"
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "streplts!walkNS:function(1)",
+          "docComment": "/**\n * Traverses a segmented phrase chain down hierarchical branch namespaces.\n *\n * @param parts - Ordered list segments indicating current structural traversal route paths.\n *\n * @param registry - The starting parent execution registry tree boundary.\n *\n * @returns Nested target lookup container references alongside calculated traversal depth counts. *\n *\n * @public\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function walkNS(parts: "
+            },
+            {
+              "kind": "Content",
+              "text": "string[]"
+            },
+            {
+              "kind": "Content",
+              "text": ", registry: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Registry",
+              "canonicalReference": "streplts!Registry:class"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "{\n    reg: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Registry",
+              "canonicalReference": "streplts!Registry:class"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    depth: number;\n}"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/utils/completion.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 5,
+            "endIndex": 8
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "parts",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "registry",
+              "parameterTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "isOptional": false
+            }
+          ],
+          "name": "walkNS"
+        }
+      ]
+    }
+  ]
+}
