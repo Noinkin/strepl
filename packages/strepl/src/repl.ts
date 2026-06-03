@@ -383,7 +383,7 @@ export class Repl {
                 if (split.length > 1) {
                     if (split[split.length - 1] === "") split.pop();
                     split.pop();
-                    const newCursor = split.join("").length;
+                    const newCursor = split.join(" ").length;
                     this.#state.input = input.slice(0, newCursor) + input.slice(this.#state.cursor);
                     this.#state.cursor = newCursor;
                 } else {
@@ -728,6 +728,8 @@ export class Repl {
 
         const v = validate(raw, this.#registry);
         if (!v.ok) {
+            this.#stdout.write("\n");
+
             await this.#flash(raw);
             if (v.unknownCmd) {
                 const allCommands = this.#registry.names();

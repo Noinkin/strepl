@@ -247,49 +247,108 @@ export function getJSCandidates(input: string, sandboxRoot: any): { candidates: 
  * @param context - Stateful parameter variables map.
  * @param globals - Embedded application environmental global tools.
  * @returns Complete colorized text safe for active terminal standard output writers.
- * * @public
+ * @public
  */
 export function colorInput(input: string, registry: Registry, jsMode: boolean, context: any, globals: any): string {
     if (jsMode) return colorJS(input);
+
+    const tokens = input.split(/(\s+)/).filter(Boolean);
+    
+    const words = tokens.filter(t => !/^\s+$/.test(t));
+    if (!words.length) return input;
+
+    const { reg, depth } = walkNS(words, registry);
+    const coloredWords: string[] = new Array(words.length);
     const trailing = input.endsWith(" ");
-    const parts = input.trim().split(/\s+/).filter(Boolean);
-    if (!parts.length) return "";
 
-    const { reg, depth } = walkNS(parts, registry);
-    const result: string[] = [];
-
-    for (let i = 0; i < depth; i++) result.push(format(COLORS.cyan + COLORS.bold, parts[i]!));
-    const rawName = parts[depth]!;
-    const cmd = reg.get(rawName);
-    const typingCmd = depth === parts.length - 1 && !trailing;
-
-    result.push(typingCmd ? format(COLORS.white + COLORS.bold, rawName) : cmd ? format(COLORS.cyan + COLORS.bold, rawName) : format(COLORS.red, rawName));
-    if (!cmd || typingCmd) return result.join(" ") + (trailing ? " " : "");
-
-    let target = cmd, argOffset = depth + 1;
-    if (cmd.commands && parts.length > depth + 1) {
-        const subRaw = parts[depth + 1]!;
-        const sub = (cmd.commands as Registry).get(subRaw);
-        const typingSub = parts.length === depth + 2 && !trailing;
-        result.push(typingSub ? format(COLORS.white + COLORS.bold, subRaw) : sub ? format(COLORS.blue + COLORS.bold, subRaw) : format(COLORS.red, subRaw));
-        if (!sub || typingSub) return result.join(" ") + (trailing ? " " : "");
-        target = sub;
-        argOffset = depth + 2;
+    for (let i = 0; i < depth; i++) {
+        coloredWords[i] = format(COLORS.cyan + COLORS.bold, words[i]!);
     }
 
-    parts.slice(argOffset).forEach((token, i) => {
-        const def = target.args[i];
-        if (!def) { result.push(format(COLORS.white, token)); return; }
-        if (def.choices) {
-            const previousArgs = parts.slice(argOffset, argOffset + i);
-            const list = typeof def.choices === "function" ? def.choices(token, previousArgs, context, globals) : def.choices;
-            result.push(list.includes(token) || list.some(c => c.startsWith(token)) ? format(COLORS.yellow, token) : format(COLORS.red + COLORS.bold, token));
-        } else {
-            result.push(format(COLORS.white, token));
-        }
-    });
+    const rawName = words[depth]!;
+    const cmd = reg.get(rawName);
+    const typingCmd = depth === words.length - 1 && !trailing;
 
-    return result.join(" ") + (trailing ? " " : "");
+    if (typingCmd) {
+        coloredWords[depth] = format(COLORS.white + COLORS.bold, rawName);
+    } else if (cmd) {
+        coloredWords[depth] = format(COLORS.cyan + COLORS.bold, rawName);
+    } else {
+        coloredWords[depth] = format(COLORS.red, rawName);
+    }
+
+    if (!cmd || typingCmd) {
+        for (let i = depth + 1; i < words.length; i++) {
+            coloredWords[i] = format(COLORS.white, words[i]!);
+        }
+    } else {
+        let target = cmd;
+        let argOffset = depth + 1;
+
+        if (cmd.commands && words.length > depth + 1) {
+            const subRaw = words[depth + 1]!;
+            const sub = (cmd.commands as Registry).get(subRaw);
+            const typingSub = words.length === depth + 2 && !trailing;
+
+            if (typingSub) {
+                coloredWords[depth + 1] = format(COLORS.white + COLORS.bold, subRaw);
+            } else if (sub) {
+                coloredWords[depth + 1] = format(COLORS.blue + COLORS.bold, subRaw);
+            } else {
+                coloredWords[depth + 1] = format(COLORS.red, subRaw);
+            }
+
+            if (!sub || typingSub) {
+                for (let i = depth + 2; i < words.length; i++) {
+                    coloredWords[i] = format(COLORS.white, words[i]!);
+                }
+            } else {
+                target = sub;
+                argOffset = depth + 2;
+                processArgs(target, argOffset);
+            }
+        } else {
+            processArgs(target, argOffset);
+        }
+    }
+
+    function processArgs(currentTarget: any, offset: number) {
+        const argsWords = words.slice(offset);
+        argsWords.forEach((token, i) => {
+            const wordIdx = offset + i;
+            const def = currentTarget.args[i];
+            if (!def) {
+                coloredWords[wordIdx] = format(COLORS.white, token);
+                return;
+            }
+            if (def.choices) {
+                const previousArgs = words.slice(offset, offset + i);
+                const list = typeof def.choices === "function"
+                    ? def.choices(token, previousArgs, context, globals)
+                    : def.choices;
+                if (list.includes(token) || list.some((c: string) => c.startsWith(token))) {
+                    coloredWords[wordIdx] = format(COLORS.yellow, token);
+                } else {
+                    coloredWords[wordIdx] = format(COLORS.red + COLORS.bold, token);
+                }
+            } else {
+                coloredWords[wordIdx] = format(COLORS.white, token);
+            }
+        });
+    }
+
+    let result = "";
+    let wordCounter = 0;
+
+    for (const token of tokens) {
+        if (/^\s+$/.test(token)) {
+            result += token;
+        } else {
+            result += coloredWords[wordCounter++];
+        }
+    }
+
+    return result;
 }
 
 /**
