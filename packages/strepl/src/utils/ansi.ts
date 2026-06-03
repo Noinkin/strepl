@@ -53,6 +53,7 @@ export const KEYS = {
     arrowLeft: "\x1b[D",
     shiftLeft: "\x1b[1;2D",
     shiftRight: "\x1b[1;2C",
+    ctrlBackspace: "\x08",
 } as const;
 
 /**

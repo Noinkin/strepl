@@ -1,7 +1,7 @@
 import { Readable, Writable } from "node:stream";
 import { type CommandDefinition, type ReplOptions, type ReplState, type RenderOptions, type ArgDefinition, type CommandInternal } from "./types.js";
 import { COLORS, KEYS, format, strip, sleep } from "./utils/ansi.js";
-import { walkNS, getCandidates, getJSCandidates, validate, currentWord } from "./utils/completion.js";
+import { walkNS, getCandidates, getJSCandidates, validate, currentWord, getLevenshteinDistance } from "./utils/completion.js";
 import { Registry } from "./registry.js";
 import { JSSandbox } from "./sandbox.js";
 import { render } from "./renderer.js";
@@ -33,6 +33,7 @@ export class Repl {
     #jsPrompt = format(COLORS.yellow + COLORS.bold, "js >") + " ";
     #jsMode = false;
     #sandbox!: JSSandbox;
+    #askingResolver: ((val: string) => void) | null = null;
     
     #stdin: Readable & { isTTY?: boolean; setRawMode?: (mode: boolean) => void };
     #stdout: Writable & { columns?: number };
@@ -68,6 +69,10 @@ export class Repl {
         this.#stdin = opts.stdin ?? process.stdin;
         this.#stdout = opts.stdout ?? process.stdout;
         this.#registerBuiltins();
+
+        process.stdout.on('resize', () => {
+            this.#draw(); 
+        });
     }
 
     /**
@@ -101,6 +106,141 @@ export class Repl {
     after(fn: HookFn): this {
         this.#after.push(fn);
         return this;
+    }
+
+    /**
+     * Asks a yes/no question and waits for a valid response, resolving with the answer.
+     * @param prompt - The question to present to the user, describing the decision at hand.
+     * @returns A promise that resolves to "y" or "n" based on the user's input.
+     */
+    async ask(prompt: string): Promise<string> {
+        this.#stdout.write(`\n  ${format(COLORS.yellow, '?')} ${prompt} `);
+        return new Promise((resolve) => {
+            this.#askingResolver = resolve;
+        });
+    }
+
+    /**
+     * Renders an array of objects as a formatted table.
+     * @param data - Array of objects to display.
+     * @param options - Configuration for table styling (bordered, padding).
+     */
+    table(data: any[], options: { bordered?: boolean, padding?: number } = {}): void {
+        const { bordered = false, padding = 1 } = options;
+
+        if (!data || data.length === 0) {
+            this.#stdout.write(format(COLORS.gray, "  No data to display.\n"));
+            return;
+        }
+
+        const keys = Object.keys(data[0]);
+        const colWidths = keys.map((key) =>
+            Math.max(strip(key).length, ...data.map((row) => strip(String(row[key] || "")).length))
+        );
+
+        const pad = " ".repeat(padding);
+        const sep = bordered ? "│" : "  ";
+
+        const renderRow = (values: string[]) => {
+            const cells = values.map((val, i) => `${pad}${val.padEnd(colWidths[i]!)}${pad}`);
+            return bordered ? `${sep}${cells.join(sep)}${sep}` : cells.join(sep);
+        };
+
+        this.#stdout.write("\n");
+
+        if (bordered) {
+            const top = `┌${colWidths.map(w => "─".repeat(w + padding * 2)).join("┬")}┐`;
+            this.#stdout.write(`  ${top}\n`);
+        }
+
+        // Draw Header
+        const header = renderRow(keys);
+        this.#stdout.write(`  ${format(COLORS.bold + COLORS.blue, header)}\n`);
+
+        if (bordered) {
+            const mid = `├${colWidths.map(w => "─".repeat(w + padding * 2)).join("┼")}┤`;
+            this.#stdout.write(`  ${mid}\n`);
+        } else {
+            this.#stdout.write(`  ${"-".repeat(strip(header).length)}\n`);
+        }
+
+        for (const row of data) {
+            const values = keys.map(k => String(row[k] || ""));
+            this.#stdout.write(`  ${renderRow(values)}\n`);
+        }
+
+        if (bordered) {
+            const bot = `└${colWidths.map(w => "─".repeat(w + padding * 2)).join("┴")}┘`;
+            this.#stdout.write(`  ${bot}\n`);
+        }
+        
+        this.#stdout.write("\n");
+    }
+
+    /**
+     * Shows a spinner. Returns a stop function.
+     * Usage: const stop = this.spinner("Loading..."); await task(); stop();
+     */
+    spinner(text: string): () => void {
+        const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+        let i = 0;
+        
+        // Hide cursor
+        this.#stdout.write("\x1b[?25l");
+        
+        const id = setInterval(() => {
+            const frame = format(COLORS.cyan, frames[i++ % frames.length]!);
+            this.#stdout.write(`\r  ${frame} ${text}`);
+        }, 80);
+
+        return () => {
+            clearInterval(id);
+            this.#stdout.write("\r\x1b[K"); // Clear line
+            this.#stdout.write("\x1b[?25h"); // Show cursor
+        };
+    }
+
+    /**
+     * Renders a progress bar. 
+     * Usage: const update = repl.progress("Building..."); update(0.5); // 50%
+     */
+    progress(label: string): (percent: number) => void {
+        const width = 30;
+        this.#stdout.write(`\n  ${label}\n`);
+        
+        return (percent: number) => {
+            const filled = Math.round(width * percent);
+            const bar = "█".repeat(filled) + "░".repeat(width - filled);
+            this.#stdout.write(`\r  ${bar} ${Math.round(percent * 100)}%`);
+            if (percent >= 1) this.#stdout.write("\n");
+        };
+    }
+
+    /**
+     * Wraps a string (or multi-line string) in an ASCII box.
+     * @param content - The text to wrap (supports newlines).
+     * @param padding - Optional horizontal padding (default 1).
+     */
+    box(content: string, padding: number = 1): string {
+        const lines = content.split('\n');
+        
+        // Calculate max width based on VISIBLE characters (stripping ANSI codes)
+        const visibleLengths = lines.map(l => strip(l).length);
+        const width = Math.max(...visibleLengths);
+        const pad = " ".repeat(padding);
+
+        // Build borders
+        const top = `┌${"─".repeat(width + padding * 2)}┐`;
+        const bottom = `└${"─".repeat(width + padding * 2)}┘`;
+
+        // Process lines: pad the right side to match max width
+        const middle = lines.map(line => {
+            const visibleLen = strip(line).length;
+            const extraSpace = width - visibleLen;
+            return `│${pad}${line}${" ".repeat(extraSpace)}${pad}│`;
+        }).join('\n');
+
+        return `${top}\n${middle}\n${bottom}`;
     }
 
     /**
@@ -223,7 +363,39 @@ export class Repl {
             return;
         }
 
+        if (this.#askingResolver) {
+            if (key === "y" || key === "Y") key = "y"
+            else if (key === "n" || key === "N") key = "n";
+            else return;
+            const resolve = this.#askingResolver;
+            this.#askingResolver = null;
+            this.#state.input = "";
+            this.#state.cursor = 0;
+            this.#draw();
+            resolve(key);
+            return;
+        }
+
         switch (key) {
+            case KEYS.ctrlBackspace: {
+                const input = this.#state.input;
+                const split = input.slice(0, this.#state.cursor).split(' ');
+                if (split.length > 1) {
+                    if (split[split.length - 1] === "") split.pop();
+                    split.pop();
+                    const newCursor = split.join("").length;
+                    this.#state.input = input.slice(0, newCursor) + input.slice(this.#state.cursor);
+                    this.#state.cursor = newCursor;
+                } else {
+                    this.#state.input = "";
+                    this.#state.cursor = 0;
+                }
+                this.#state.selectionAnchor = null;
+                this.#histIdx = -1;
+                this.#refreshCandidates();
+                this.#draw();
+                return;
+            }
             case KEYS.altC:
             case KEYS.altC2:
                 if (this.#state.selectionAnchor === null) {
@@ -557,13 +729,20 @@ export class Repl {
         const v = validate(raw, this.#registry);
         if (!v.ok) {
             await this.#flash(raw);
-            if (v.unknownCmd)
-                this.#stdout.write(
-                    format(
-                        COLORS.red,
-                        `  ✗ Unknown command: "${v.unknownCmd}"`,
-                    ) + format(COLORS.gray, ' — type "help"\n\n'),
-                );
+            if (v.unknownCmd) {
+                const allCommands = this.#registry.names();
+                const args = raw.trim().split(/\s+/);
+                const bestMatch = allCommands.reduce((prev, curr) => {
+                    const dist = getLevenshteinDistance(args[0]!, curr);
+                    return dist < prev.dist ? { name: curr, dist } : prev;
+                }, { name: '', dist: Infinity });
+                this.#stdout.write(format(COLORS.red, `  Command "${args[0]}" not found.`));
+                if (bestMatch.dist < 3) { // Only suggest if distance is small
+                    this.#stdout.write(format(COLORS.yellow, ` Did you mean "${bestMatch.name}"?\n`));
+                } else {
+                    this.#stdout.write(format(COLORS.gray, ' Type "help" for a list of commands.\n'));
+                }
+            }
             else if (v.needsSubcmd)
                 this.#stdout.write(
                     format(
@@ -616,7 +795,13 @@ export class Repl {
 
         try {
             if (run) {
+                try {
                 await run(argParts, this.context, this.globals, options);
+                } catch (e: any) {
+                    this.#stdout.write(
+                        format(COLORS.red, `\n  ✗ Command Execution Failed:\n  ${e.message}\n\n`),
+                    );
+                }
                 this.#stdout.write("\n");
             }
         } catch (e: any) {

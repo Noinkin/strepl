@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import crypto from "node:crypto";
-import { Repl, arg, pathCompleter } from "./index.js";
+import { Repl, arg, pathCompleter, format, COLORS } from "./index.js";
 
 interface AppPreferences {
     theme: "dark" | "light" | "cyberpunk";
@@ -194,6 +194,24 @@ repl.command({
                 }
                 process.stdout.write(`  \x1b[36m⚡ db.${collectionName} records:\x1b[0m ${JSON.stringify(target, null, 2)}\n`);
             }
+        },
+        {
+            name: "list",
+            description: "View all collections in a table",
+            run: async (_, context: AppContext) => {
+                const stop = repl.spinner("Fetching database state...");
+                
+                await new Promise(r => setTimeout(r, 1000));
+                stop();
+
+                const tableData = Object.keys(context.db).map(key => ({
+                    collection: key,
+                    count: context.db[key]?.length,
+                    status: 'active'
+                }));
+                
+                repl.table(tableData, { bordered: true, padding: 1 });
+            }
         }
     ]
 });
@@ -264,7 +282,17 @@ repl.command({
         {
             name: "hardware",
             description: "Output architecture configuration specifics of runtime engine sandbox",
-            run(_, __, globals: AppGlobals) {
+            async run(_, __, globals: AppGlobals) {
+                const progress = repl.progress("Fetching system stats...");
+                
+                await new Promise(r => setTimeout(r, 1000));
+                progress(0.3);
+
+                await new Promise(r => setTimeout(r, 1000));
+                progress(0.6);
+                
+                await new Promise(r => setTimeout(r, 1000));
+                progress(1);
                 process.stdout.write(`\n  \x1b[1mHost Infrastructure Core Metrics:\x1b[0m\n`);
                 process.stdout.write(`    Platform System Type: \x1b[33m${globals.os.platform()} (${globals.os.arch()})\x1b[0m\n`);
                 process.stdout.write(`    Process Exec Uptime : \x1b[36m${globals.os.uptime()} seconds\x1b[0m\n`);
@@ -309,6 +337,47 @@ repl.command({
         process.stdout.write(`  Target Profile Environment: ${options.environment ?? "production"}\n`);
         process.stdout.write(`  Minify Assets Output     : ${options.minify ? "Active" : "Disabled"}\n`);
         process.stdout.write(`  Verbose Operational Logs : ${options.verbose ? "Enabled" : "Muted"}\n\n`);
+    }
+});
+
+repl.command({
+    name: "delete",
+    description: "Delete a database collection (Demonstrates 'ask' feature)",
+    args: [arg("collection_name", { choices: () => Object.keys(repl.context.db) })],
+    run: async ([name], context: AppContext) => {
+        if (!name) return;
+        
+        if (!context.db[name]) {
+            process.stdout.write(` ✗ Collection "${name}" does not exist.\n`);
+            return;
+        }
+
+        const answer = await repl.ask(`Are you sure you want to delete "${name}"? (y/n)`);
+
+        if (answer.toLowerCase() === 'y') {
+            delete context.db[name];
+            process.stdout.write(` ✔ Collection "${name}" deleted.\n`);
+        } else {
+            process.stdout.write(` ⚠ Deletion aborted.\n`);
+        }
+    }
+});
+
+repl.command({
+    name: "status",
+    description: "Audit framework state",
+    run: (_, context: AppContext) => {
+        // Construct the array of lines first
+        const output = 
+            format(COLORS.bold, "Framework State Audit")
+            + "\n---------------------"
+            + `\nActive Session: ${format(COLORS.yellow, context.user || 'Guest')}`
+            + `\nTheme:          ${context.preferences.theme}`
+            + `\nTelemetry:      ${context.preferences.telemetry ? format(COLORS.green, 'ON') : 'OFF'}`
+            + `\nMemory Buckets: ${Object.keys(context.db).join(", ")}`
+
+        // Box the array and print
+        process.stdout.write(`\n${repl.box(output)}\n`);
     }
 });
 
