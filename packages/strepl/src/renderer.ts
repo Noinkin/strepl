@@ -34,11 +34,6 @@ export function render(
     context: any,
     globals: any
 ): void {
-    if (state.drawnDropdownLines > 0) {
-        stdout.write(COLORS.up(state.drawnDropdownLines));
-    }
-
-    stdout.write("\r\x1b[K\x1b[J");
 
     const columns = stdout.columns ?? 80;
     const { input, candidates, drawnDropdownLines, cursor, selectionAnchor } = state;
@@ -228,48 +223,61 @@ function buildClearSequence(drawnLines: number): string {
 }
 
 /**
- * Low-level ANSI parser that safely injects inverse-video selection blocks 
- * into already syntax-highlighted strings without breaking existing color states.
+ * Low-level ANSI parser that safely injects a consistent background selection block
+ * into already syntax-highlighted strings without breaking or leaking color states.
  */
 function highlightSelection(ansiString: string, start: number, end: number): string {
     let result = "";
     let plainIdx = 0;
     let i = 0;
-    let inverseActive = false;
+    let selectionActive = false;
+
+    const BG_ON = "\x1b[44m"; 
+    const BG_OFF = "\x1b[49m";
 
     while (i < ansiString.length) {
-        if (!inverseActive && plainIdx >= start && plainIdx < end) {
-            result += "\x1b[7m"; // Turn inverse video ON
-            inverseActive = true;
-        } else if (inverseActive && (plainIdx < start || plainIdx >= end)) {
-            inverseActive = false;
+        if (!selectionActive && plainIdx >= start && plainIdx < end) {
+            result += BG_ON;
+            selectionActive = true;
+        } 
+        else if (selectionActive && (plainIdx < start || plainIdx >= end)) {
+            result += BG_OFF;
+            selectionActive = false;
         }
 
         if (ansiString[i] === "\x1b") {
-            let seq = "";
-            while (i < ansiString.length && ansiString[i] !== "m") {
-                seq += ansiString[i];
+            let seq = "\x1b";
+            i++;
+            
+            if (i < ansiString.length && ansiString[i] === "[") {
+                seq += "[";
                 i++;
-            }
-            if (i < ansiString.length) {
-                seq += "m";
+                while (i < ansiString.length) {
+                    const char = ansiString[i];
+                    seq += char;
+                    i++;
+                    if (char! >= "@" && char! <= "~") break;
+                }
+            } else if (i < ansiString.length) {
+                seq += ansiString[i];
                 i++;
             }
             
             result += seq;
             
-            if (inverseActive && (seq === "\x1b[0m" || seq === "\x1b[m" || seq.endsWith("[0m"))) {
-                result += "\x1b[7m";
+            if (selectionActive && (seq === "\x1b[0m" || seq === "\x1b[m" || seq.endsWith("[0m"))) {
+                result += BG_ON;
             }
-        } else {
+        } 
+        else {
             result += ansiString[i];
             plainIdx++;
             i++;
         }
     }
 
-    if (inverseActive) {
-        result += "\x1b[27m";
+    if (selectionActive) {
+        result += BG_OFF;
     }
 
     return result;
