@@ -34,6 +34,7 @@ export class Registry {
             aliases: def.aliases ?? [],
             description: def.description ?? "",
             args: ('args' in def ? def.args : []) ?? [],
+            options: ('options' in def ? def.options : []) ?? [],
             commands: sub,
             run: ('run' in def ? def.run : null) ?? null,
         };

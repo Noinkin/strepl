@@ -43,45 +43,114 @@ export function walkNS(parts: string[], registry: Registry): { reg: Registry; de
 export function getCandidates(input: string, registry: Registry, context: any, globals: any): string[] {
     const trailing = input.endsWith(" ");
     const parts = input.trim().split(/\s+/).filter(Boolean);
-    if (!parts.length) return [];
-
-    const { reg, depth } = walkNS(parts, registry);
-    if (depth === parts.length - 1 && !trailing) {
-        const typed = parts[depth]!;
-        return reg.names().filter((n) => n.startsWith(typed) && n !== typed);
+    
+    if (!parts.length) {
+        return registry.names();
     }
 
-    const cmd = reg.get(parts[depth]!);
-    if (!cmd) return [];
-
-    if (cmd.commands) {
-        const after = parts.slice(depth + 1);
-        if (!after.length || (after.length === 1 && !trailing)) {
-            const typed = after[0] ?? "";
-            return (cmd.commands as Registry).names().filter((n) => n.startsWith(typed) && n !== typed);
+    let reg = registry;
+    let depth = 0;
+    while (depth < parts.length - 1) {
+        const cmd = reg.get(parts[depth]!);
+        if (cmd?.commands) {
+            reg = cmd.commands;
+            depth++;
+        } else {
+            break;
         }
-        const sub = (cmd.commands as Registry).get(after[0]!);
-        return sub ? argCandidates(sub, after.slice(1), trailing, context, globals) : [];
     }
 
-    return argCandidates(cmd, parts.slice(depth + 1), trailing, context, globals);
-}
+    const currentToken = parts[depth]!;
+    const cmd = reg.get(currentToken);
 
-/**
- * Generates dynamic list configurations filling parameter positions.
- */
-function argCandidates(cmd: CommandInternal, argParts: string[], trailing: boolean, context: any, globals: any): string[] {
-    const idx = trailing ? argParts.length : Math.max(0, argParts.length - 1);
-    const typed = trailing ? "" : (argParts.at(-1) ?? "");
-    const def = cmd.args[idx];
-    if (!def?.choices) return [];
+    if (cmd && cmd.commands && trailing) {
+        return cmd.commands.names();
+    }
 
-    const previousArgs = argParts.slice(0, idx);
-    const choices = typeof def.choices === "function" 
-        ? def.choices(typed, previousArgs, context, globals) 
-        : def.choices;
+    if (!cmd || (cmd.commands && !trailing)) {
+        const searchWord = cmd?.commands && !trailing ? currentToken : parts[parts.length - 1]!;
+        return reg.names().filter(name => name.startsWith(searchWord));
+    }
 
-    return choices.filter((c) => c.startsWith(typed) && c !== typed);
+    const cmdArgsTokens = parts.slice(depth + 1);
+    const currentWord = trailing ? "" : (cmdArgsTokens[cmdArgsTokens.length - 1] ?? "");
+
+    if (!cmd || (cmd.commands && !trailing) || (depth === parts.length - 1 && !trailing)) {
+        const searchWord = (cmd?.commands && !trailing) ? currentToken : parts[parts.length - 1]!;
+        return reg.names().filter(name => name.startsWith(searchWord));
+    }
+
+    const optToken = trailing 
+        ? cmdArgsTokens[cmdArgsTokens.length - 1] 
+        : cmdArgsTokens[cmdArgsTokens.length - 2];
+
+    if (optToken && optToken.startsWith("-")) {
+        const cleanOpt = optToken.replace(/^--?/, "");
+        const targetOpt = cmd.options?.find(o => o.name === cleanOpt || o.short === cleanOpt);
+        
+        if (targetOpt && targetOpt.choices) {
+            const choices = typeof targetOpt.choices === "function"
+                ? targetOpt.choices(currentWord, cmdArgsTokens, context, globals)
+                : targetOpt.choices;
+            return (choices || []).filter(c => c.startsWith(currentWord));
+        }
+    }
+
+    const usedOptions = new Set<string>();
+    const tokensToProcess = trailing ? cmdArgsTokens : cmdArgsTokens.slice(0, -1);
+    
+    for (const token of tokensToProcess) {
+        if (token.startsWith("-")) {
+            const clean = token.replace(/^--?/, "");
+            const opt = cmd.options?.find(o => o.name === clean || o.short === clean);
+            if (opt) {
+                usedOptions.add(opt.name);
+            }
+        }
+    }
+
+    const optionCandidates: string[] = [];
+    if (cmd.options) {
+        for (const opt of cmd.options) {
+            if (usedOptions.has(opt.name)) continue;
+            if (opt.name) optionCandidates.push(`--${opt.name}`);
+            if (opt.short) optionCandidates.push(`-${opt.short}`);
+        }
+    }
+
+    const positionalArgsTyped: string[] = [];
+    let i = 0;
+    const upperLimit = trailing ? cmdArgsTokens.length : cmdArgsTokens.length - 1;
+    
+    while (i < upperLimit) {
+        const token = cmdArgsTokens[i]!;
+        if (token.startsWith("-")) {
+            const clean = token.replace(/^--?/, "");
+            const opt = cmd.options?.find(o => o.name === clean || o.short === clean);
+            if (opt && (opt.type === "string" || opt.choices)) {
+                i += 2;
+            } else {
+                i += 1;
+            }
+        } else {
+            positionalArgsTyped.push(token);
+            i += 1;
+        }
+    }
+    const currentArgIndex = positionalArgsTyped.length;
+
+    let positionalCandidates: string[] = [];
+    if (cmd.args && cmd.args[currentArgIndex]) {
+        const argDef = cmd.args[currentArgIndex]!;
+        if (argDef.choices) {
+            positionalCandidates = typeof argDef.choices === "function"
+                ? argDef.choices(currentWord, positionalArgsTyped, context, globals)
+                : argDef.choices;
+        }
+    }
+
+    const allCandidates = [...positionalCandidates, ...optionCandidates];
+    return allCandidates.filter(c => c.startsWith(currentWord));
 }
 
 /**

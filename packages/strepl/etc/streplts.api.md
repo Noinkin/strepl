@@ -69,7 +69,9 @@ export interface CommandInternal {
     // (undocumented)
     name: string;
     // (undocumented)
-    run: ((args: string[], context: any, globals: any) => void | Promise<void>) | null;
+    options: OptionDefinition[];
+    // (undocumented)
+    run: ((args: string[], context: any, globals: any, options: Record<string, any>) => void | Promise<void>) | null;
 }
 
 // @public
@@ -79,7 +81,8 @@ export function currentWord(input: string): string;
 export interface ExecutableCommand extends BaseCommand {
     args?: ArgDefinition[];
     commands?: never;
-    run: (args: string[], context: any, globals: any) => void | Promise<void>;
+    options?: OptionDefinition[];
+    run: (args: string[], context: any, globals: any, options: Record<string, any>) => void | Promise<void>;
 }
 
 // @public
@@ -134,6 +137,15 @@ export interface NamespaceCommand extends BaseCommand {
     args?: never;
     commands: CommandDefinition[];
     run?: never;
+}
+
+// @public
+export interface OptionDefinition {
+    choices?: string[] | ((typed: string, previousArgs: string[], context: any, globals: any) => string[]) | null;
+    description?: string;
+    name: string;
+    short?: string;
+    type: "boolean" | "string";
 }
 
 // @public

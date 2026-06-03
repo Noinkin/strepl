@@ -24,6 +24,7 @@ export default defineConfig({
 						{ label: 'Getting Started', slug: 'guides/getting-started' },
                         { label: 'Advanced Commands', slug: 'guides/advanced/commands' },
                         { label: 'Middleware', slug: 'guides/advanced/middleware' },
+                        { label: 'Options', slug: 'guides/advanced/options' },
 					],
 				},
 				{

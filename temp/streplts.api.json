@@ -778,6 +778,38 @@
             },
             {
               "kind": "PropertySignature",
+              "canonicalReference": "streplts!CommandInternal#options:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "options: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "OptionDefinition",
+                  "canonicalReference": "streplts!OptionDefinition:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Internal",
+              "name": "options",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              }
+            },
+            {
+              "kind": "PropertySignature",
               "canonicalReference": "streplts!CommandInternal#run:member",
               "docComment": "",
               "excerptTokens": [
@@ -787,7 +819,16 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "((args: string[], context: any, globals: any) => void | "
+                  "text": "((args: string[], context: any, globals: any, options: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Record",
+                  "canonicalReference": "!Record:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<string, any>) => void | "
                 },
                 {
                   "kind": "Reference",
@@ -809,7 +850,7 @@
               "name": "run",
               "propertyTypeTokenRange": {
                 "startIndex": 1,
-                "endIndex": 4
+                "endIndex": 6
               }
             }
           ],
@@ -945,8 +986,40 @@
             },
             {
               "kind": "PropertySignature",
+              "canonicalReference": "streplts!ExecutableCommand#options:member",
+              "docComment": "/**\n * Collection of option flag definitions specifying available switches, expected value types, and descriptions for help documentation.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "options?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "OptionDefinition",
+                  "canonicalReference": "streplts!OptionDefinition:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "options",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              }
+            },
+            {
+              "kind": "PropertySignature",
               "canonicalReference": "streplts!ExecutableCommand#run:member",
-              "docComment": "/**\n * Execution callback invoked when the parser completes traversal validation matching this definition. *\n *\n * @param args - Sanitized argument token list parsed from user raw string inputs.\n *\n * @param context - Reference to application mutational memory states.\n *\n * @param globals - Attached static module references or environmental injection toolkits.\n */\n",
+              "docComment": "/**\n * Execution callback invoked when the parser completes traversal validation matching this definition. *\n *\n * @param args - Sanitized argument token list parsed from user raw string inputs.\n *\n * @param context - Reference to application mutational memory states.\n *\n * @param globals - Attached static module references or environmental injection toolkits.\n *\n * @param options - Parsed option values.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -954,7 +1027,16 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "(args: string[], context: any, globals: any) => void | "
+                  "text": "(args: string[], context: any, globals: any, options: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Record",
+                  "canonicalReference": "!Record:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<string, any>) => void | "
                 },
                 {
                   "kind": "Reference",
@@ -976,7 +1058,7 @@
               "name": "run",
               "propertyTypeTokenRange": {
                 "startIndex": 1,
-                "endIndex": 4
+                "endIndex": 6
               }
             }
           ],
@@ -1566,6 +1648,159 @@
               "endIndex": 2
             }
           ]
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "streplts!OptionDefinition:interface",
+          "docComment": "/**\n * Structural definition specifying configurations for unordered option flags or switches.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface OptionDefinition "
+            }
+          ],
+          "fileUrlPath": "src/types.ts",
+          "releaseTag": "Public",
+          "name": "OptionDefinition",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!OptionDefinition#choices:member",
+              "docComment": "/**\n * An static string array or a dynamic evaluation closure generating eligible autocomplete variations for the option's value.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "choices?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string[] | ((typed: string, previousArgs: string[], context: any, globals: any) => string[]) | null"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "choices",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!OptionDefinition#description:member",
+              "docComment": "/**\n * A brief description of the option's purpose, used in help documentation to inform users about its functionality.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "description?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "description",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!OptionDefinition#name:member",
+              "docComment": "/**\n * The unique identifier labeling the target option flag, excluding prefix dashes. For example, \"verbose\" for a \"--verbose\" flag.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "name: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "name",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!OptionDefinition#short:member",
+              "docComment": "/**\n * Optional single-character alias serving as a shorthand for the option. For example, \"v\" for a \"--verbose\" flag.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "short?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "short",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "streplts!OptionDefinition#type:member",
+              "docComment": "/**\n * Defines the expected data type for the option's value, which can be either a boolean (for flags) or a string (for options that require a value).\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "type: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "\"boolean\" | \"string\""
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "type",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
         },
         {
           "kind": "Function",

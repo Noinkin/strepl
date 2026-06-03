@@ -97,6 +97,15 @@ repl.command({
                     choices: pathCompleter({ onlyDirs: true }) 
                 })
             ],
+            options: [
+                {
+                    name: "recursive",
+                    short: "r",
+                    type: "boolean",
+                    description: "Apply command operations recursively to all nested subdirectories and files",
+                    choices: ['true', 'false']
+                }
+            ],
             run([targetPath]) {
                 if (!targetPath) return;
                 try {
@@ -114,6 +123,15 @@ repl.command({
                 arg("file_path", {
                     choices: pathCompleter() 
                 })
+            ],
+            options: [
+                {
+                    name: "recursive",
+                    short: "r",
+                    type: "string",
+                    description: "Apply command operations recursively to all nested subdirectories and files",
+                    choices: ['true', 'false']
+                }
             ],
             run([filePath], _, globals) {
                 if (!filePath) return;
@@ -254,6 +272,44 @@ repl.command({
             }
         }
     ]
+});
+
+repl.command({
+    name: "compile",
+    description: "Orchestrate project compilation tasks using dynamic flag boundaries",
+    args: [
+        arg("target_dir", { required: true })
+    ],
+    options: [
+        {
+            name: "environment",
+            short: "e",
+            type: "string",
+            description: "Specify target build runtime profiles",
+            choices: ["production", "staging", "development"]
+        },
+        {
+            name: "minify",
+            short: "m",
+            type: "boolean",
+            description: "Strip spacing layouts to condense bundle objects"
+        },
+        {
+            name: "verbose",
+            short: "v",
+            type: "boolean",
+            description: "Output fine-grained trace logs during processing"
+        }
+    ],
+    run(args, context, globals, options) {
+        const [targetDir] = args;
+        
+        process.stdout.write(`\n  [COMPILE ENGINE START]\n`);
+        process.stdout.write(`  Target Workspace Directory: ${targetDir}\n`);
+        process.stdout.write(`  Target Profile Environment: ${options.environment ?? "production"}\n`);
+        process.stdout.write(`  Minify Assets Output     : ${options.minify ? "Active" : "Disabled"}\n`);
+        process.stdout.write(`  Verbose Operational Logs : ${options.verbose ? "Enabled" : "Muted"}\n\n`);
+    }
 });
 
 repl.start();

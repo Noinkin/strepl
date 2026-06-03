@@ -1,5 +1,5 @@
 import { Readable, Writable } from "node:stream";
-import { type CommandDefinition, type ReplOptions, type ReplState, type RenderOptions, type ArgDefinition } from "./types.js";
+import { type CommandDefinition, type ReplOptions, type ReplState, type RenderOptions, type ArgDefinition, type CommandInternal } from "./types.js";
 import { COLORS, KEYS, format, strip, sleep } from "./utils/ansi.js";
 import { walkNS, getCandidates, getJSCandidates, validate, currentWord } from "./utils/completion.js";
 import { Registry } from "./registry.js";
@@ -137,6 +137,50 @@ export class Repl {
 
     get #activePrompt(): string {
         return this.#jsMode ? this.#jsPrompt : this.#prompt;
+    }
+
+    #parseOptionsAndArgs(parts: string[], cmd: CommandInternal): { args: string[]; options: Record<string, any> } {
+        const args: string[] = [];
+        const options: Record<string, any> = {};
+
+        for (const opt of cmd.options) {
+            options[opt.name] = opt.type === "boolean" ? false : null;
+        }
+
+        for (let i = 0; i < parts.length; i++) {
+            const p = parts[i]!;
+            if (p.startsWith("-")) {
+                let keyToken = p;
+                let valToken: string | null = null;
+
+                if (p.includes("=")) {
+                    const idx = p.indexOf("=");
+                    keyToken = p.slice(0, idx);
+                    valToken = p.slice(idx + 1);
+                }
+
+                const name = keyToken.startsWith("--") ? keyToken.slice(2) : null;
+                const short = !name && keyToken.startsWith("-") ? keyToken.slice(1) : null;
+                const opt = cmd.options?.find(o => (name && o.name === name) || (short && o.short === short));
+
+                if (opt) {
+                    if (opt.type === "boolean") {
+                        options[opt.name] = valToken ? valToken === "true" : true;
+                    } else {
+                        if (valToken !== null) {
+                            options[opt.name] = valToken;
+                        } else if (i + 1 < parts.length && !parts[i + 1]!.startsWith("-")) {
+                            options[opt.name] = parts[i + 1];
+                            i++;
+                        }
+                    }
+                }
+                continue;
+            }
+            args.push(p);
+        }
+
+        return { args, options };
     }
 
     #draw(opts?: RenderOptions): void {
@@ -566,15 +610,24 @@ export class Repl {
                 return;
             }
         }
+
+        const rawPayloadTokens = parts.slice(depth + 1);
+        const { options } = this.#parseOptionsAndArgs(rawPayloadTokens, cmd);
+
         try {
             if (run) {
-                await run(argParts, this.context, this.globals);
+                await run(argParts, this.context, this.globals, options);
                 this.#stdout.write("\n");
             }
         } catch (e: any) {
             this.#stdout.write(format(COLORS.red, `  ✗ ${e.message}\n\n`));
         }
         for (const fn of this.#after) await fn(raw, this.context, this.globals);
+
+        this.#state.candidates = [];
+        this.#state.drawnDropdownLines = 0;
+        this.#state.completionIdx = 0;
+        this.#state.cursor = 0;
 
         this.#draw();
     }
@@ -605,7 +658,7 @@ export class Repl {
                     choices: () => this.#registry.names(),
                 },
             ],
-            run: ([name]) => (name ? this.#helpCmd(name) : this.#printHelp()),
+            run: (args) => (args.length > 0 ? this.#helpCmd(args) : this.#printHelp()),
         });
 
         this.command({
@@ -652,11 +705,18 @@ export class Repl {
                         : format(COLORS.gray, ` [${a.name}]`),
                 )
                 .join("");
+            const options = cmd.options
+                .map((o) => {
+                    const flag = o.short ? `-${o.short}` : `--${o.name}`;
+                    const val = o.type === "boolean" ? "" : ` <${o.name}>`;
+                    return format(COLORS.blue, ` [${flag}${val}]`);
+                })
+                .join("");
             const desc = format(
                 COLORS.white + COLORS.dim,
                 "  " + cmd.description,
             );
-            this.#stdout.write(`  ${name}${aliases}${sub}${args}${desc}\n`);
+            this.#stdout.write(`  ${name}${aliases}${sub}${args}${options}${desc}\n`);
             if (cmd.commands) {
                 for (const s of (cmd.commands as Registry).all()) {
                     const sa = s.args
@@ -666,8 +726,19 @@ export class Repl {
                                 : format(COLORS.gray, ` [${a.name}]`),
                         )
                         .join("");
+                    const so = s.options
+                        ? s.options
+                              .map((o) => {
+                                    const flag = o.short
+                                        ? `-${o.short}`
+                                        : `--${o.name}`;
+                                    const val = o.type === "boolean" ? "" : ` <${o.name}>`;
+                                    return format(COLORS.blue, ` [${flag}${val}]`);
+                                })
+                              .join("")
+                        : "";
                     this.#stdout.write(
-                        `    ${format(COLORS.blue, s.name.padEnd(10))}${sa}  ${format(COLORS.gray, s.description)}\n`,
+                        `    ${format(COLORS.blue, s.name.padEnd(10))}${sa}${so}  ${format(COLORS.gray, s.description)}\n`,
                     );
                 }
             }
@@ -675,46 +746,50 @@ export class Repl {
         this.#stdout.write("\n");
     }
 
-    #helpCmd(name: string): void {
-        const cmd = this.#registry.get(name);
+    #helpCmd(path: string[]): void {
+        const { reg, depth } = walkNS(path, this.#registry);
+        const cmd = reg.get(path[depth]!);
+
         if (!cmd) {
-            this.#stdout.write(
-                format(COLORS.red, `  No command "${name}"\n\n`),
-            );
+            this.#stdout.write(format(COLORS.red, `  No command "${path.join(" ")}"\n\n`));
             return;
         }
-        const usage = [
-            cmd.name,
-            ...cmd.args.map((a) =>
-                a.required ? `<${a.name}>` : `[${a.name}]`,
-            ),
-        ].join(" ");
-        this.#stdout.write(`\n  ${format(COLORS.bold, usage)}\n`);
-        if (cmd.aliases.length)
-            this.#stdout.write(
-                `  ${format(COLORS.gray, "aliases: " + cmd.aliases.join(", "))}\n`,
-            );
-        this.#stdout.write(`  ${cmd.description}\n`);
-        if (cmd.args.length) {
-            this.#stdout.write("\n");
+
+        this.#stdout.write(`\n  ${format(COLORS.bold + COLORS.cyan, cmd.name)} ${format(COLORS.dim, cmd.description)}\n`);
+
+        const usage = [cmd.name, ...cmd.args.map((a) => (a.required ? `<${a.name}>` : `[${a.name}]`))].join(" ");
+        this.#stdout.write(`  ${format(COLORS.gray, "Usage:")}   ${usage}\n`);
+
+        if (cmd.aliases.length) {
+            this.#stdout.write(`  ${format(COLORS.gray, "Aliases:")} ${cmd.aliases.join(", ")}\n`);
+        }
+
+        if (cmd.args.length > 0) {
+            this.#stdout.write(`\n  ${format(COLORS.bold, "Arguments:")}\n`);
             for (const a of cmd.args) {
-                const tag = a.required
-                    ? format(COLORS.yellow, "<required>")
-                    : format(COLORS.gray, "[optional]");
-                
-                const choices = typeof a.choices === "function" ? a.choices('', ['<value>'], this.context, this.globals) : a.choices;
-                const cho = a.choices
-                    ? format(
-                          COLORS.gray,
-                          "  " +
-                              (choices || []).join(", "),
-                      )
-                    : "";
-                this.#stdout.write(
-                    `    ${format(COLORS.cyan, a.name.padEnd(14))} ${tag}${cho}\n`,
-                );
+                const tag = a.required ? format(COLORS.yellow, "required") : format(COLORS.gray, "optional");
+                const choices = typeof a.choices === "function" ? a.choices('', [], this.context, this.globals) : a.choices;
+                const cho = choices ? format(COLORS.gray, ` (${choices.join("|")})`) : "";
+                this.#stdout.write(`    ${format(COLORS.cyan, a.name.padEnd(14))} ${tag}${cho}\n`);
             }
         }
+
+        if (cmd.options && cmd.options.length > 0) {
+            this.#stdout.write(`\n  ${format(COLORS.bold, "Options:")}\n`);
+            for (const opt of cmd.options) {
+                const flag = [opt.short ? `-${opt.short}` : null, `--${opt.name}`].filter(Boolean).join(", ");
+                const type = opt.type === "boolean" ? "[flag]" : "[value]";
+                this.#stdout.write(`    ${format(COLORS.blue, flag.padEnd(14))} ${format(COLORS.dim, type)}\n`);
+            }
+        }
+
+        if (cmd.commands) {
+            this.#stdout.write(`\n  ${format(COLORS.bold, "Subcommands:")}\n`);
+            for (const sub of (cmd.commands as Registry).all()) {
+                this.#stdout.write(`    ${format(COLORS.cyan, sub.name.padEnd(14))} ${sub.description}\n`);
+            }
+        }
+
         this.#stdout.write("\n");
     }
 

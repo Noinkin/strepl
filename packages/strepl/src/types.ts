@@ -25,6 +25,32 @@ export interface ArgDefinition {
 }
 
 /**
+ * Structural definition specifying configurations for unordered option flags or switches.
+ */
+export interface OptionDefinition {
+    /**
+     * The unique identifier labeling the target option flag, excluding prefix dashes. For example, "verbose" for a "--verbose" flag.
+     */
+    name: string;
+    /**
+     * Optional single-character alias serving as a shorthand for the option. For example, "v" for a "--verbose" flag.
+     */
+    short?: string;
+    /**
+     * Defines the expected data type for the option's value, which can be either a boolean (for flags) or a string (for options that require a value).
+     */
+    type: "boolean" | "string";
+    /**
+     * A brief description of the option's purpose, used in help documentation to inform users about its functionality.
+     */
+    description?: string;
+    /**
+     * An static string array or a dynamic evaluation closure generating eligible autocomplete variations for the option's value.
+     */
+    choices?: string[] | ((typed: string, previousArgs: string[], context: any, globals: any) => string[]) | null;
+}
+
+/**
  * Common base descriptor shared across all command nodes within the execution hierarchy.
  *
  * @public
@@ -58,12 +84,17 @@ export interface ExecutableCommand extends BaseCommand {
      */
     args?: ArgDefinition[];
     /**
+     * Collection of option flag definitions specifying available switches, expected value types, and descriptions for help documentation.
+     */
+    options?: OptionDefinition[];
+    /**
      * Execution callback invoked when the parser completes traversal validation matching this definition.
      * * @param args - Sanitized argument token list parsed from user raw string inputs.
      * @param context - Reference to application mutational memory states.
      * @param globals - Attached static module references or environmental injection toolkits.
+     * @param options - Parsed option values.
      */
-    run: (args: string[], context: any, globals: any) => void | Promise<void>;
+    run: (args: string[], context: any, globals: any, options: Record<string, any>) => void | Promise<void>;
     /**
      * Disallowed property structure forcing mutual exclusivity with branch namespaces.
      */
@@ -110,8 +141,9 @@ export interface CommandInternal {
     aliases: string[];
     description: string;
     args: ArgDefinition[];
+    options: OptionDefinition[];
     commands: any | null;
-    run: ((args: string[], context: any, globals: any) => void | Promise<void>) | null;
+    run: ((args: string[], context: any, globals: any, options: Record<string, any>) => void | Promise<void>) | null;
 }
 
 /**

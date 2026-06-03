@@ -2,7 +2,7 @@ import { Writable } from "node:stream";
 import { Registry } from "./registry.js";
 import { type ReplState, type RenderOptions } from "./types.js";
 import { COLORS, format, strip } from "./utils/ansi.js";
-import { currentWord, colorInput, getHintArgs } from "./utils/completion.js";
+import { currentWord, colorInput, getHintArgs, walkNS } from "./utils/completion.js";
 
 const MAX_DROPDOWN = 7;
 
@@ -33,6 +33,7 @@ export function render(
     context: any,
     globals: any
 ): void {
+    stdout.write("\r\x1b[K" + "\x1b[J");
     const { input, candidates, drawnDropdownLines, cursor, selectionAnchor } = state;
     let { completionIdx } = state;
 
@@ -44,8 +45,38 @@ export function render(
     else if (!jsMode && candidates.length) { ghost = (candidates[completionIdx] ?? "").slice(word.length); }
 
     const hintDefs = jsMode ? [] : getHintArgs(input, registry);
-    const ghostStr = ghost ? format(COLORS.gray, ghost) : "";
-    const hintStr = hintDefs.length ? " " + hintDefs.map((a) => a.required ? format(COLORS.gray, `<${a.name}>`) : format(COLORS.gray + COLORS.dim, `[${a.name}]`)).join(" ") : "";
+    
+    let optionParamHint = "";
+    if (!jsMode && candidates.length && input.trim().length > 0) {
+        const activeCandidate = candidates[completionIdx];
+        if (activeCandidate && activeCandidate.startsWith("-")) {
+            const parts = input.trim().split(/\s+/).filter(Boolean);
+            const { reg, depth } = walkNS(parts, registry);
+            const cmd = parts[depth] ? reg.get(parts[depth]!) : undefined;
+            
+            if (cmd && cmd.options) {
+                const opt = cmd.options.find((o: any) => 
+                    `--${o.name}` === activeCandidate || (o.short && `-${o.short}` === activeCandidate)
+                );
+                if (opt && opt.type === "string") {
+                    optionParamHint = " " + format(COLORS.gray, `<${opt.name}>`);
+                }
+            }
+        }
+    }
+
+    const ghostStr = (ghost ? format(COLORS.gray, ghost) : "") + optionParamHint;
+    
+    const hintStr = optionParamHint ? "" : (hintDefs.length
+        ? " " +
+          hintDefs
+              .map((a) =>
+                  a.required
+                      ? format(COLORS.gray, `<${a.name}>`)
+                      : format(COLORS.gray + COLORS.dim, `[${a.name}]`),
+              )
+              .join(" ")
+        : "");
 
     const dropList = jsMode ? (state.jsCandidates ?? []) : candidates;
     const dropListLength = dropList.length;
@@ -96,7 +127,7 @@ export function render(
             } else { out += `\n  ${icon} ${label}`; }
             newDropLines++;
         }
-        if (xPos < strip(flashPrompt + colored + ghostStr + hintStr).length) { out += COLORS.up(newDropLines) + "\r" + COLORS.right(xPos); }
+        out += COLORS.up(newDropLines) + "\r" + COLORS.right(xPos);
     } else if (input.length > 0 && xPos < strip(flashPrompt + colored + ghostStr + hintStr).length) { out += "\r" + COLORS.right(xPos); }
 
     state.drawnDropdownLines = newDropLines;

@@ -1,0 +1,103 @@
+---
+
+title: Command Options
+description: Configure execution behavior with boolean flags, key-value parameters, and shorthand aliases.
+
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+While positional arguments provide the required inputs for your commands, **Options** allow your users to toggle features, modify execution flow, or provide optional configuration parameters without cluttering the main command structure.
+
+## Defining Command Options
+
+Options are defined within the `options` array of your command configuration. Each option must specify a `name`, a `type` (`boolean` or `value`), and a `description`.
+
+```typescript
+import { Repl } from 'strepl';
+
+const shell = new Repl();
+
+shell.command({
+  name: 'sync',
+  description: 'Synchronize local environment with remote storage',
+  options: [
+    { 
+      name: 'verbose', 
+      short: 'v', 
+      type: 'boolean', 
+      description: 'Enable detailed logging output' 
+    },
+    { 
+      name: 'format', 
+      short: 'f', 
+      type: 'value', 
+      description: 'Output format (json, yaml, table)' 
+    }
+  ],
+  run: async (args, context, options) => {
+    // Accessing options via the third parameter
+    if (options.verbose) {
+      console.log('Initiating verbose sync process...');
+    }
+    
+    const format = options.format || 'table';
+    console.log(`Syncing in ${format} format...`);
+  }
+});
+
+```
+
+---
+
+## Flag vs. Value Types
+
+`stREPL` differentiates between two primary types of options:
+
+### 1. Boolean Flags (`type: 'boolean'`)
+
+These are binary toggles. Users invoke them by simply typing the flag name. If present, they evaluate to `true` in your `options` object; otherwise, they are `undefined`.
+
+* **Usage**: `sync --verbose` or `sync -v`
+* **Result**: `{ verbose: true }`
+
+### 2. Value Options (`type: 'value'`)
+
+These require a follow-up value. If the user provides the option, the next token in the input string is consumed as the value for that option.
+
+* **Usage**: `sync --format json` or `sync -f yaml`
+* **Result**: `{ format: 'json' }`
+
+---
+
+## Shorthand Aliases
+
+To improve developer ergonomics, you should always provide a `short` character alias for frequently used flags. This allows users to type `-v` instead of the more verbose `--verbose`.
+
+The parsing engine automatically maps both the long and short forms to the primary `name` you defined in your option configuration.
+
+---
+
+## Advanced Configuration: Default Values
+
+While `stREPL` passes `undefined` for omitted options, you can easily implement default behaviors inside your execution handler using logical assignment.
+
+```typescript
+run: async (args, context, options) => {
+  // Apply defaults if the user did not provide an option
+  const timeout = options.timeout ?? 3000;
+  const force = options.force ?? false;
+
+  console.log(`Executing with timeout: ${timeout}ms, force: ${force}`);
+}
+
+```
+
+## Option vs. Argument Separation
+
+A common architectural mistake is overloading `args` with configuration data. Follow this rule of thumb to keep your interface clean:
+
+* **Use `args`** for mandatory, identity-based data (e.g., `fileId`, `username`, `targetPath`).
+* **Use `options`** for behavior modifiers, filtering, or optional preferences (e.g., `--json`, `--filter`, `--timeout`).
+
+By strictly separating these, `stREPL` can provide better auto-completion hints, as the UI will prioritize suggesting flags (starting with `-`) only after the primary command is defined, and positional arguments based on the command's current index.

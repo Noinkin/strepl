@@ -188,6 +188,10 @@
         "slug": "api/streplts/namespacecommand"
       },
       {
+        "label": "OptionDefinition",
+        "slug": "api/streplts/optiondefinition"
+      },
+      {
         "label": "pathCompleter() function",
         "slug": "api/streplts/pathcompleter"
       },
