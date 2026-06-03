@@ -34,6 +34,7 @@ export class Repl {
     #jsMode = false;
     #sandbox!: JSSandbox;
     #askingResolver: ((val: string) => void) | null = null;
+    #flipBackspace: boolean;
     
     #stdin: Readable & { isTTY?: boolean; setRawMode?: (mode: boolean) => void };
     #stdout: Writable & { columns?: number };
@@ -69,6 +70,7 @@ export class Repl {
         this.#stdin = opts.stdin ?? process.stdin;
         this.#stdout = opts.stdout ?? process.stdout;
         this.#registerBuiltins();
+        this.#flipBackspace = opts.flipBackspace ?? false;
 
         process.stdout.on('resize', () => {
             this.#draw(); 
@@ -377,7 +379,7 @@ export class Repl {
         }
 
         switch (key) {
-            case KEYS.ctrlBackspace: {
+            case (this.#flipBackspace ? KEYS.backspace : KEYS.ctrlBackspace): {
                 const input = this.#state.input;
                 const split = input.slice(0, this.#state.cursor).split(' ');
                 if (split.length > 1) {
@@ -442,7 +444,7 @@ export class Repl {
                 return this.#draw();
             case KEYS.enter:
                 return this.#execute();
-            case KEYS.backspace: {
+            case (this.#flipBackspace ? KEYS.ctrlBackspace : KEYS.backspace): {
                 const s = this.#state;
                 const range =
                     this.#state.selectionAnchor === null

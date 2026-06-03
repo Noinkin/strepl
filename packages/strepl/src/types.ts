@@ -208,6 +208,10 @@ export interface ReplOptions {
      * Output writing channel receiving ANSI text payloads. Defaults to `process.stdout`.
      */
     stdout?: Writable & { columns?: number };
+    /**
+     * Flag indicating whether to apply a byte sequence flip for backspace and ctrl+backspace inputs, addressing inconsistencies in certain terminal environments. Defaults to `false`.
+     */
+    flipBackspace?: boolean;
 }
 
 /**
