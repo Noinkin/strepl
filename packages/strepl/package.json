@@ -1,7 +1,7 @@
 {
   "name": "streplts",
   "description": "A high-performance, interactive REPL framework for building custom execution shell applications in TypeScript. Features tree-structured nested command namespacing, context-aware asynchronous tab completion, a safe isolated sandboxed JavaScript VM environment with top-level await rewrites, multi-line buffering, live colorized syntax highlighting, text block selections, and flexible streaming lifecycle hooks.",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

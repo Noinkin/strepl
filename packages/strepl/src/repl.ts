@@ -506,7 +506,8 @@ export class Repl {
                 this.#state.cursor = Math.max(0, this.#state.cursor - 1);
                 return this.#draw();
             default: {
-                if (key.startsWith("\x1b")) return;
+                const charCode = key.charCodeAt(0);
+                if (key.length !== 1 || charCode < 32 || charCode === 127) return;
 
                 const s = this.#state;
 
