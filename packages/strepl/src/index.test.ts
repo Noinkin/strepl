@@ -46,6 +46,8 @@ const repl = new Repl({
         },
     } as AppContext,
     globals: { fs, path, os, crypto } as AppGlobals,
+    historyFile: "./.strepl_history",
+    statusBar: (): string => `  User: ${repl.context.user || 'Guest'} | Theme: ${repl.context.preferences.theme}`,
 });
 
 repl
@@ -247,6 +249,30 @@ repl.command({
                 process.stdout.write(`    • Realtime Telemetry Hook: \x1b[35m${context.preferences.telemetry}\x1b[0m\n`);
                 process.stdout.write(`    • Allocated Memory Buckets: \x1b[32m${Object.keys(context.db).join(", ")}\x1b[0m\n\n`);
             }
+        },
+        {
+            name: "select",
+            description: "Interactive selection prompt for configuration options",
+            args: [
+                arg("parameter", { choices: ["theme", "telemetry"] })
+            ],
+            run: async ([param], context: AppContext) => {
+                if (!param) return;
+                let choices: string[] = [];
+                if (param === "theme") {
+                    choices = ["dark", "light", "cyberpunk"];
+                } else if (param === "telemetry") {
+                    choices = ["true", "false"];
+                }
+                const selection = await repl.select(`Select a value for "${param}":`, choices);
+                if (param === "theme") {
+                    context.preferences.theme = selection as any;
+                    process.stdout.write(`  \x1b[92m✔ Updated theme configuration:\x1b[0m ${selection}\n`);
+                } else if (param === "telemetry") {
+                    context.preferences.telemetry = selection === "true";
+                    process.stdout.write(`  \x1b[92m✔ Updated telemetry configuration:\x1b[0m ${selection}\n`);
+                }
+            }
         }
     ]
 });
@@ -367,7 +393,6 @@ repl.command({
     name: "status",
     description: "Audit framework state",
     run: (_, context: AppContext) => {
-        // Construct the array of lines first
         const output = 
             format(COLORS.bold, "Framework State Audit")
             + "\n---------------------"
@@ -376,7 +401,6 @@ repl.command({
             + `\nTelemetry:      ${context.preferences.telemetry ? format(COLORS.green, 'ON') : 'OFF'}`
             + `\nMemory Buckets: ${Object.keys(context.db).join(", ")}`
 
-        // Box the array and print
         process.stdout.write(`\n${repl.box(output)}\n`);
     }
 });

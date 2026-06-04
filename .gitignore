@@ -4,3 +4,4 @@ dist/
 apps/docs/src/content/docs/api/*
 .turbo/
 *.log
+.strepl_history

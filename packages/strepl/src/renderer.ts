@@ -30,80 +30,114 @@ export function render(
     promptStr: string,
     jsMode: boolean,
     opts: RenderOptions = {},
-    stdout: Writable & { columns?: number },
+    stdout: Writable & { columns?: number, rows?: number },
     context: any,
     globals: any
 ): void {
-
     const columns = stdout.columns ?? 80;
-    const { input, candidates, drawnDropdownLines, cursor, selectionAnchor } = state;
-    const completionIdx = state.completionIdx;
+    
+    let activePrompt = promptStr;
+    let activeInput = state.input;
+    let dropList = jsMode ? (state.jsCandidates ?? []) : state.candidates;
+    let hideHints = false;
 
-    const coloredInput = colorInput(input, registry, jsMode, context, globals) + COLORS.reset;
+    if (state.selectMode) {
+        activePrompt = format(COLORS.yellow, "? ") + (state.selectPrompt || "") + " ";
+        activeInput = "";
+        dropList = state.selectChoices || [];
+        hideHints = true;
+    } else if (state.searchMode) {
+        activePrompt = format(COLORS.cyan, "(reverse-i-search)") + format(COLORS.gray, ` \`${state.searchQuery}\`: `);
+        activeInput = state.candidates[state.completionIdx] ?? "";
+        hideHints = true;
+    }
 
-    const ghost = resolveGhost(state, jsMode, candidates);
+    const inputLinesAll = activeInput.split('\n');
+    const isMultiline = inputLinesAll.length > 1;
 
-    const optionParamHint = resolveOptionParamHint(
-        completionIdx,
-        jsMode,
-        candidates,
-        registry,
-        input
-    );
-
+    const coloredInput = colorInput(activeInput, registry, jsMode, context, globals) + COLORS.reset;
+    const ghost = (hideHints || isMultiline) ? "" : resolveGhost(state, jsMode, state.candidates);
+    const optionParamHint = (hideHints || isMultiline) ? "" : resolveOptionParamHint(state.completionIdx, jsMode, state.candidates, registry, state.input);
     const ghostStr = (ghost ? format(COLORS.gray, ghost) : "") + optionParamHint;
+    const hintStr = (hideHints || optionParamHint || isMultiline) ? "" : buildHintStr(jsMode ? [] : getHintArgs(state.input, registry));
 
-    const hintStr = optionParamHint
-        ? ""
-        : buildHintStr(jsMode ? [] : getHintArgs(input, registry));
-
-    const dropList = jsMode ? (state.jsCandidates ?? []) : candidates;
-    const { visibleItems, localIdx, overflowTop, overflowBottom } = sliceDropdown(
-        dropList,
-        completionIdx
-    );
-    const showDrop = dropList.length >= 1;
+    const { visibleItems, localIdx, overflowTop, overflowBottom } = sliceDropdown(dropList, state.completionIdx);
+    
+    const showDrop = dropList.length >= 1 && !isMultiline;
 
     const flashPrompt = opts.flashError
-        ? format(COLORS.red + COLORS.bold, strip(promptStr).trim()) + " "
-        : promptStr;
-    const promptVisLen = strip(promptStr).length;
+        ? format(COLORS.red + COLORS.bold, strip(activePrompt).trim()) + " "
+        : activePrompt;
     
-    const xPos = Math.min(
-        strip(colorInput(input.slice(0, cursor), registry, jsMode, context, globals) + COLORS.reset).length +
-        promptVisLen,
-        columns - 1
-    );
+    const promptVisLen = strip(activePrompt).length;
+    const beforeCursor = activeInput.slice(0, state.cursor);
+    const cursorLines = beforeCursor.split('\n');
+    
+    const currentLineText = cursorLines[cursorLines.length - 1] || "";
+    const currentLineVisLen = strip(colorInput(currentLineText, registry, jsMode, context, globals) + COLORS.reset).length;
+    const xPos = Math.min(promptVisLen + currentLineVisLen, columns - 1);
 
-    const range =
-        selectionAnchor === null
-            ? null
-            : {
-                  start: Math.min(cursor, selectionAnchor),
-                  end:   Math.max(cursor, selectionAnchor),
-              };
+    const range = state.selectionAnchor === null ? null : {
+        start: Math.min(state.cursor, state.selectionAnchor),
+        end: Math.max(state.cursor, state.selectionAnchor),
+    };
 
-    let out = buildClearSequence(drawnDropdownLines);
+    const prevCursorLine = (state as any).prevCursorLine ?? 0;
+    const prevTotalLines = state.drawnDropdownLines ?? 0;
 
+    let out = "";
+    if (prevCursorLine > 0) {
+        out += COLORS.up(prevCursorLine);
+    }
+    out += "\r\x1b[K";
+    for (let i = 0; i < prevTotalLines; i++) {
+        out += "\n\x1b[K";
+    }
+    if (prevTotalLines > 0) {
+        out += COLORS.up(prevTotalLines);
+    }
+    out += "\r";
+
+    const paddingMargin = " ".repeat(promptVisLen);
     if (range) {
-        out += buildSelectionLine(
-            flashPrompt, input, range, ghostStr, hintStr,
-            registry, jsMode, context, globals
-        );
+        out += buildSelectionLine(flashPrompt, activeInput, range, ghostStr, hintStr, registry, jsMode, context, globals);
     } else {
-        out += flashPrompt + coloredInput + COLORS.reset + ghostStr + hintStr;
+        out += flashPrompt + coloredInput.replace(/\n/g, '\n' + paddingMargin) + COLORS.reset + ghostStr + hintStr;
     }
 
-    let newDropLines = 0;
+    const textLinesCount = inputLinesAll.length - 1;
+    let dropdownLinesCount = 0;
+
     if (showDrop) {
         out += buildDropdown(visibleItems, localIdx, overflowTop, overflowBottom, columns);
-        newDropLines = visibleItems.length;
-        out += COLORS.up(newDropLines);
+        dropdownLinesCount += visibleItems.length;
     }
 
+    let currentTotalLines = textLinesCount + dropdownLinesCount;
+
+    if (opts.statusBar) {
+        const text = typeof opts.statusBar === 'function' ? opts.statusBar() : '   strepl | Ready';
+        
+        const absoluteFloorHeight = 7; 
+        const targetSpacerLines = Math.max(0, absoluteFloorHeight - currentTotalLines);
+        
+        for (let i = 0; i < targetSpacerLines; i++) {
+            out += `\n\x1b[K`;
+        }
+        out += `\n\x1b[K\x1b[44m\x1b[97m${text.padEnd(columns)}\x1b[0m`;
+        
+        currentTotalLines = currentTotalLines + targetSpacerLines + 1;
+    }
+
+    const linesToMoveUp = currentTotalLines - (cursorLines.length - 1);
+    if (linesToMoveUp > 0) {
+        out += COLORS.up(linesToMoveUp);
+    }
     out += "\r" + COLORS.right(xPos);
 
-    state.drawnDropdownLines = newDropLines;
+    state.drawnDropdownLines = currentTotalLines;
+    (state as any).prevCursorLine = cursorLines.length - 1;
+    
     stdout.write(out);
 }
 

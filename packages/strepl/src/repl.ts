@@ -6,6 +6,8 @@ import { Registry } from "./registry.js";
 import { JSSandbox } from "./sandbox.js";
 import { render } from "./renderer.js";
 import clipboard from "clipboardy";
+import fs from "node:fs";
+import util from "node:util";
 
 /**
  * Functional wrapper signature representing lifecycle hook callbacks processed around execution periods.
@@ -35,6 +37,9 @@ export class Repl {
     #sandbox!: JSSandbox;
     #askingResolver: ((val: string) => void) | null = null;
     #flipBackspace: boolean;
+    #historyFile?: string;
+    #statusBar?: boolean | (() => string);
+    #selectResolver: ((val: string) => void) | null = null;
     
     #stdin: Readable & { isTTY?: boolean; setRawMode?: (mode: boolean) => void };
     #stdout: Writable & { columns?: number };
@@ -71,6 +76,14 @@ export class Repl {
         this.#stdout = opts.stdout ?? process.stdout;
         this.#registerBuiltins();
         this.#flipBackspace = opts.flipBackspace ?? false;
+        this.#historyFile = opts.historyFile;
+        this.#statusBar = opts.statusBar ?? true;
+
+        if (this.#historyFile && fs.existsSync(this.#historyFile)) {
+            try {
+                this.#history = fs.readFileSync(this.#historyFile, "utf8").split("\n").filter(Boolean);
+            } catch {}
+        }
 
         process.stdout.on('resize', () => {
             this.#draw(); 
@@ -123,6 +136,27 @@ export class Repl {
     }
 
     /**
+     * Shows a dropdown list allowing the user to select an option using arrow keys.
+     */
+    async select(prompt: string, choices: string[]): Promise<string> {
+        this.#state.selectMode = true;
+        this.#state.selectPrompt = prompt;
+        this.#state.selectChoices = choices;
+        this.#state.completionIdx = 0;
+        this.#draw();
+        return new Promise((resolve) => {
+            this.#selectResolver = resolve;
+        });
+    }
+
+    /**
+     * Eliminates [Object object] by properly inspecting deeply nested objects and arrays.
+     */
+    inspect(obj: any, depth = 4): string {
+        return util.inspect(obj, { depth, colors: true });
+    }
+
+    /**
      * Renders an array of objects as a formatted table.
      * @param data - Array of objects to display.
      * @param options - Configuration for table styling (bordered, padding).
@@ -155,7 +189,6 @@ export class Repl {
             this.#stdout.write(`  ${top}\n`);
         }
 
-        // Draw Header
         const header = renderRow(keys);
         this.#stdout.write(`  ${format(COLORS.bold + COLORS.blue, header)}\n`);
 
@@ -187,7 +220,6 @@ export class Repl {
         const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
         let i = 0;
         
-        // Hide cursor
         this.#stdout.write("\x1b[?25l");
         
         const id = setInterval(() => {
@@ -197,8 +229,8 @@ export class Repl {
 
         return () => {
             clearInterval(id);
-            this.#stdout.write("\r\x1b[K"); // Clear line
-            this.#stdout.write("\x1b[?25h"); // Show cursor
+            this.#stdout.write("\r\x1b[K");
+            this.#stdout.write("\x1b[?25h");
         };
     }
 
@@ -226,16 +258,13 @@ export class Repl {
     box(content: string, padding: number = 1): string {
         const lines = content.split('\n');
         
-        // Calculate max width based on VISIBLE characters (stripping ANSI codes)
         const visibleLengths = lines.map(l => strip(l).length);
         const width = Math.max(...visibleLengths);
         const pad = " ".repeat(padding);
 
-        // Build borders
         const top = `┌${"─".repeat(width + padding * 2)}┐`;
         const bottom = `└${"─".repeat(width + padding * 2)}┘`;
 
-        // Process lines: pad the right side to match max width
         const middle = lines.map(line => {
             const visibleLen = strip(line).length;
             const extraSpace = width - visibleLen;
@@ -331,7 +360,7 @@ export class Repl {
             this.#registry,
             this.#activePrompt,
             this.#jsMode,
-            opts,
+            { ...opts, statusBar: this.#statusBar },
             this.#stdout,
             this.context,
             this.globals
@@ -378,7 +407,76 @@ export class Repl {
             return;
         }
 
+        if (this.#state.selectMode) {
+            if (key === KEYS.arrowUp) {
+                this.#state.completionIdx = (this.#state.completionIdx - 1 + this.#state.selectChoices!.length) % this.#state.selectChoices!.length;
+                return this.#draw();
+            }
+            if (key === KEYS.arrowDown) {
+                this.#state.completionIdx = (this.#state.completionIdx + 1) % this.#state.selectChoices!.length;
+                return this.#draw();
+            }
+            if (key === KEYS.enter) {
+                const resolve = this.#selectResolver;
+                const chosen = this.#state.selectChoices![this.#state.completionIdx]!;
+                this.#selectResolver = null;
+                this.#state.selectMode = false;
+                this.#state.input = "";
+                this.#draw();
+                if (resolve) resolve(chosen);
+                return;
+            }
+            return;
+        }
+
+        if (this.#state.searchMode) {
+            if (key === KEYS.escape || key === KEYS.ctrlC) {
+                this.#state.searchMode = false;
+                this.#state.input = "";
+                this.#state.cursor = 0;
+                return this.#draw();
+            }
+            if (key === KEYS.enter) {
+                this.#state.input = this.#state.candidates[this.#state.completionIdx] ?? this.#state.searchQuery!;
+                this.#state.searchMode = false;
+                return this.#execute();
+            }
+            if (key === KEYS.tab || key === KEYS.arrowRight) {
+                this.#state.input = this.#state.candidates[this.#state.completionIdx] ?? this.#state.searchQuery!;
+                this.#state.cursor = this.#state.input.length;
+                this.#state.searchMode = false;
+                this.#refreshCandidates();
+                return this.#draw();
+            }
+            if (key === KEYS.arrowUp) { this.#navUp(); return; }
+            if (key === KEYS.arrowDown) { this.#navDown(); return; }
+            
+            if (key === KEYS.backspace || key === KEYS.ctrlBackspace) {
+                this.#state.searchQuery = this.#state.searchQuery!.slice(0, -1);
+            } else if (key.length === 1 && key.charCodeAt(0) >= 32) {
+                this.#state.searchQuery += key;
+            }
+            
+            const q = this.#state.searchQuery!.toLowerCase();
+            this.#state.candidates = [...new Set(this.#history)].filter(h => h.toLowerCase().includes(q)).reverse();
+            this.#state.completionIdx = 0;
+            return this.#draw();
+        }
+
         switch (key) {
+            case KEYS.ctrlR:
+                this.#state.searchMode = true;
+                this.#state.searchQuery = "";
+                this.#state.candidates = [...new Set(this.#history)].reverse();
+                this.#state.completionIdx = 0;
+                return this.#draw();
+            case KEYS.altEnter:
+                const i = this.#state.cursor;
+                this.#state.input = this.#state.input.slice(0, i) + "\n" + this.#state.input.slice(i);
+                this.#state.cursor = i + 1;
+                this.#histIdx = -1;
+                this.#refreshCandidates();
+                return this.#draw();
             case (this.#flipBackspace ? KEYS.backspace : KEYS.ctrlBackspace): {
                 const input = this.#state.input;
                 const split = input.slice(0, this.#state.cursor).split(' ');
@@ -479,10 +577,61 @@ export class Repl {
             }
             case KEYS.tab:
                 return this.#accept();
-            case KEYS.arrowUp:
-                return this.#navUp();
-            case KEYS.arrowDown:
-                return this.#navDown();
+            case KEYS.arrowUp: {
+                const s = this.#state;
+                const lines = s.input.split('\n');
+                if (lines.length > 1) {
+                    const beforeCursor = s.input.slice(0, s.cursor).split('\n');
+                    if (beforeCursor.length > 1) {
+                        const currentLineIdx = beforeCursor.length - 1;
+                        const colPos = beforeCursor[beforeCursor.length - 1]!.length;
+                        
+                        const targetLineText = lines[currentLineIdx - 1];
+                        const newColPos = Math.min(colPos, targetLineText!.length);
+                        
+                        let newCursor = 0;
+                        for (let i = 0; i < currentLineIdx - 1; i++) {
+                            newCursor += lines[i]!.length + 1;
+                        }
+                        newCursor += newColPos;
+                        
+                        s.cursor = newCursor;
+                        this.#draw();
+                        break;
+                    }
+                }
+                
+                this.#navUp();
+                break;
+            }
+
+            case KEYS.arrowDown: {
+                const s = this.#state;
+                const lines = s.input.split('\n');
+                if (lines.length > 1) {
+                    const beforeCursor = s.input.slice(0, s.cursor).split('\n');
+                    if (beforeCursor.length < lines.length) {
+                        const currentLineIdx = beforeCursor.length - 1;
+                        const colPos = beforeCursor[beforeCursor.length - 1]!.length;
+                        
+                        const targetLineText = lines[currentLineIdx + 1];
+                        const newColPos = Math.min(colPos, targetLineText!.length);
+                        
+                        let newCursor = 0;
+                        for (let i = 0; i <= currentLineIdx; i++) {
+                            newCursor += lines[i]!.length + 1;
+                        }
+                        newCursor += newColPos;
+                        
+                        s.cursor = newCursor;
+                        this.#draw();
+                        break;
+                    }
+                }
+
+                this.#navDown();
+                break;
+            }
             case KEYS.arrowRight:
                 this.#clearSelection();
                 this.#state.cursor = Math.min(
@@ -647,12 +796,9 @@ export class Repl {
         this.#state.cursor = 0;
         this.#refreshCandidates();
         this.#state.drawnDropdownLines = 0;
-        this.#stdout.write("\x1b[2J\x1b[H");
-        this.#stdout.write(
-            "\n" +
-                format(COLORS.yellow + COLORS.bold, "  JS mode") +
-                format(COLORS.gray, ' — Esc, "exit", or "js" to leave\n\n'),
-        );
+
+        this.#stdout.write("\n" + format(COLORS.yellow + COLORS.bold, "  --> JS mode enabled (Esc to exit) <--\n\n"));
+        
         this.#draw();
     }
 
@@ -661,23 +807,29 @@ export class Repl {
         this.#state.input = "";
         this.#state.cursor = 0;
         this.#refreshCandidates();
-        this.#state.drawnDropdownLines = 0;
-        this.#stdout.write("\x1b[2J\x1b[H");
-        this.#stdout.write("\n" + format(COLORS.gray, "  Command mode\n\n"));
+
+        this.#stdout.write("\n" + format(COLORS.gray, "  --> Command mode enabled <--\n\n"));
+        
         this.#draw();
     }
 
     async #execute(): Promise<void> {
         const s = this.#state;
 
-        if (s.drawnDropdownLines > 0) {
-            let out = "";
-            for (let i = 0; i < s.drawnDropdownLines; i++) out += "\n\x1b[K";
-            out += COLORS.up(s.drawnDropdownLines);
-            this.#stdout.write(out);
-            s.drawnDropdownLines = 0;
+        const inputLinesAll = s.input.split('\n');
+        const beforeCursor = s.input.slice(0, s.cursor).split('\n');
+        const linesToMoveDown = inputLinesAll.length - beforeCursor.length;
+
+        let out = "";
+        
+        if (linesToMoveDown > 0) {
+            out += COLORS.down(linesToMoveDown);
         }
-        this.#stdout.write("\n");
+
+        out += "\r\n\x1b[J";
+        
+        this.#stdout.write(out);
+        s.drawnDropdownLines = 0;
 
         if (s.input.trimEnd().endsWith("\\")) {
             this.#mlBuffer.push(s.input.trimEnd().slice(0, -1).trim());
@@ -701,6 +853,9 @@ export class Repl {
             return;
         }
         this.#history.push(raw);
+        if (this.#historyFile) {
+            try { fs.appendFileSync(this.#historyFile, raw + "\n", "utf8"); } catch {}
+        }
 
         if (this.#jsMode) {
             const t = raw.trim();
@@ -742,7 +897,7 @@ export class Repl {
                     return dist < prev.dist ? { name: curr, dist } : prev;
                 }, { name: '', dist: Infinity });
                 this.#stdout.write(format(COLORS.red, `  Command "${args[0]}" not found.`));
-                if (bestMatch.dist < 3) { // Only suggest if distance is small
+                if (bestMatch.dist < 3) {
                     this.#stdout.write(format(COLORS.yellow, ` Did you mean "${bestMatch.name}"?\n`));
                 } else {
                     this.#stdout.write(format(COLORS.gray, ' Type "help" for a list of commands.\n'));
@@ -823,14 +978,17 @@ export class Repl {
     }
 
     async #flash(raw: string): Promise<void> {
+        const lines = raw.split('\n');
+        const display = lines[0] + (lines.length > 1 ? ' ...' : '');
+        
         this.#stdout.write(
-            `\x1b[1A\r\x1b[K` +
+            `\x1b[1A\r\x1b[K  ` +
                 format(
                     COLORS.red + COLORS.bold,
                     strip(this.#activePrompt).trim(),
                 ) +
                 " " +
-                format(COLORS.red, raw),
+                format(COLORS.red, display),
         );
         await sleep(120);
         this.#stdout.write("\n");
@@ -855,7 +1013,18 @@ export class Repl {
             name: "clear",
             description: "Clear the screen",
             run: () => {
-                this.#stdout.write("\x1b[2J\x1b[H")
+                this.#state.drawnDropdownLines = 0;
+                (this.#state as any).prevCursorLine = 0;
+                
+                this.#stdout.write("\x1b[2J\x1b[3J\x1b[H");
+                
+                if (this.#jsMode) {
+                    this.#stdout.write(format(COLORS.yellow + COLORS.bold, "  --> JS mode enabled (Esc to exit) <--\n\n"));
+                } else {
+                    this.#stdout.write(format(COLORS.gray, "  --> Command mode enabled <--\n\n"));
+                }
+                
+                this.#draw();
             },
         });
 
@@ -985,11 +1154,20 @@ export class Repl {
 
     #exit(): void {
         const s = this.#state;
-        if (s.drawnDropdownLines > 0) {
-            let out = "\r\x1b[K";
-            for (let i = 0; i < s.drawnDropdownLines; i++) out += "\n\x1b[K";
-            this.#stdout.write(out);
+        
+        const inputLinesAll = s.input.split('\n');
+        const beforeCursor = s.input.slice(0, s.cursor).split('\n');
+        const linesToMoveDown = inputLinesAll.length - beforeCursor.length;
+
+        let out = "";
+        
+        if (linesToMoveDown > 0) {
+            out += COLORS.down(linesToMoveDown);
         }
+        
+        out += "\r\x1b[J";
+        
+        this.#stdout.write(out);
         this.#stdout.write("\n" + format(COLORS.gray, "  Exiting.\n"));
         process.exit(0);
     }

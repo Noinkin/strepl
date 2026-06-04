@@ -184,6 +184,26 @@ export interface ReplState {
      * The starting index offset marker where an highlighted block selection range commences.
      */
     selectionAnchor: number | null;
+    /**
+     * Boolean flag for history search mode.
+     */
+    searchMode?: boolean;
+    /**
+     * The current search query string used to filter command history entries when operating in search mode.
+     */
+    searchQuery?: string;
+    /**
+     * Boolean flag for user made select menus.
+     */
+    selectMode?: boolean;
+    /**
+     * The select menu prompt string.
+     */
+    selectPrompt?: string;
+    /**
+     * The list of choices to display in the select menu.
+     */
+    selectChoices?: string[];
 }
 
 /**
@@ -212,6 +232,14 @@ export interface ReplOptions {
      * Flag indicating whether to apply a byte sequence flip for backspace and ctrl+backspace inputs, addressing inconsistencies in certain terminal environments. Defaults to `false`.
      */
     flipBackspace?: boolean;
+    /**
+     * File path string specifying where to persist command history logs across sessions. If undefined, command history will not be saved between sessions.
+     */
+    historyFile?: string;
+    /**
+     * Boolean toggle or dynamic evaluation function determining whether to render a status bar dock below the prompt.
+     */
+    statusBar?: boolean | (() => string);
 }
 
 /**
@@ -224,4 +252,8 @@ export interface RenderOptions {
      * Forces the current text prompt frame to flash a highlighted error visual accent state.
      */
     flashError?: boolean;
+    /**
+     * Boolean toggle or dynamic evaluation function determining whether to render a status bar dock below the prompt.
+     */
+    statusBar?: boolean | (() => string);
 }

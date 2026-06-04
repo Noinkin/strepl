@@ -25,6 +25,10 @@ export const COLORS = {
      * Generates a terminal escape code moving the cursor horizontally backward.
      */
     left: (n: number) => (n > 0 ? `\x1b[${n}D` : ""),
+    /**
+     * Generates a terminal escape code moving the cursor vertically downward.
+     */
+    down: (n: number) => (n > 0 ? `\x1b[${n}B` : ""),
 } as const;
 
 /**
@@ -54,6 +58,8 @@ export const KEYS = {
     shiftLeft: "\x1b[1;2D",
     shiftRight: "\x1b[1;2C",
     ctrlBackspace: "\x08",
+    ctrlR: "\x12",
+    altEnter: "\x1b\r",
 } as const;
 
 /**
