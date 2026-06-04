@@ -1,6 +1,8 @@
 import { Registry } from "../registry.js";
 import { type CommandInternal, type ArgDefinition } from "../types.js";
 import { COLORS, format } from "./ansi.js";
+import fsimport from "node:fs";
+import pathimport from "node:path";
 
 const JS_KEYWORDS = [
     "const", "let", "var", "return", "if", "else", "for", "while", "function",
@@ -408,8 +410,8 @@ export function validate(input: string, registry: Registry): { ok: boolean; unkn
  */
 export function pathCompleter(options: { onlyDirs?: boolean } = {}): (typed: string, previousArgs: string[], context: any, globals: any) => string[] {
     return (typed: string, previousArgs: string[], context: any, globals: any): string[] => {
-        const fs = globals.fs || require("node:fs");
-        const path = globals.path || require("node:path");
+        const fs = globals.fs || fsimport;
+        const path = globals.path || pathimport;
         
         const normalized = typed.replace(/\\/g, "/");
         let searchDir = ".";
